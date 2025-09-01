@@ -6,30 +6,19 @@ import net.runelite.api.Client;
 import net.runelite.api.widgets.Widget;
 
 import java.security.MessageDigest;
-import java.util.HexFormat;
 
 public class NarrationDetector {
     private String lastHash = null;
 
     public void maybeNarrateOpenText(Client client, OsrsTtsConfig cfg, VoiceRuntime runtime) {
         if (client == null || runtime == null || cfg == null || !cfg.isNarratorEnabled()) return;
-        Widget[][] widgets = client.getWidgets();
-        if (widgets == null) return;
-
         StringBuilder sb = new StringBuilder();
-        for (Widget[] group : widgets) {
+        // Conservative scan: check a common chatbox/text group (e.g., 162) if present
+        // to avoid relying on getWidgets() which may not be available on this API version
+        for (int groupId : new int[] {162, 548, 593, 12}) {
+            Widget group = client.getWidget(groupId, 0);
             if (group == null) continue;
-            for (Widget w : group) {
-                if (w == null) continue;
-                if (w.isHidden()) continue;
-                String t = w.getText();
-                if (t != null && t.length() > 0) {
-                    String s = stripTags(t).trim();
-                    if (!s.isEmpty()) {
-                        sb.append(s).append('\n');
-                    }
-                }
-            }
+            collectVisibleText(group, sb);
         }
         String text = sb.toString().trim();
         if (text.length() < 200) return; // heuristic: ignore short UI labels
@@ -51,9 +40,28 @@ public class NarrationDetector {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             byte[] dig = md.digest(s.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(dig);
+            StringBuilder hex = new StringBuilder(dig.length * 2);
+            for (byte b : dig) {
+                hex.append(String.format("%02x", b));
+            }
+            return hex.toString();
         } catch (Exception e) {
             return Integer.toHexString(s.hashCode());
+        }
+    }
+
+    private static void collectVisibleText(Widget w, StringBuilder sb) {
+        if (w == null || w.isHidden()) return;
+        String t = w.getText();
+        if (t != null && !t.isEmpty()) {
+            String s = stripTags(t).trim();
+            if (!s.isEmpty()) sb.append(s).append('\n');
+        }
+        Widget[] children = w.getChildren();
+        if (children != null) {
+            for (Widget c : children) {
+                collectVisibleText(c, sb);
+            }
         }
     }
 }

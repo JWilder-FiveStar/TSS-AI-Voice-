@@ -1,7 +1,6 @@
 package com.example.osrstts.dialog;
 
 import com.example.osrstts.voice.VoiceRuntime;
-import net.runelite.api.ChatMessageType;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.EventBus;
@@ -24,9 +23,9 @@ public class DialogListener {
     @Subscribe
     public void onChatMessage(ChatMessage chatMessage) {
         try {
-            if (chatMessage.getType() == ChatMessageType.NPC_CHAT) {
-                String npc = chatMessage.getName();
-                String msg = chatMessage.getMessage();
+            String npc = chatMessage.getName();
+            String msg = chatMessage.getMessage();
+            if (npc != null && !npc.isEmpty() && msg != null && !msg.isEmpty()) {
                 voiceRuntime.speakNpc(npc, stripTags(msg), Collections.emptySet());
             }
             // TODO: detect quest journal or book narration from appropriate events/widgets;

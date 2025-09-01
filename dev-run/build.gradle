@@ -1,0 +1,31 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenLocal()
+    maven { url = 'https://repo.runelite.net' }
+    mavenCentral()
+}
+
+dependencies {
+    // Match the RuneLite client version used by the plugin build to avoid class mismatches
+    implementation 'net.runelite:client:1.11.15'
+    implementation project(':osrs-tts-runelite-plugin')
+}
+
+application {
+    mainClass = 'net.runelite.client.RuneLite'
+    applicationDefaultJvmArgs = [
+            '-Duser.country=US',
+            '-Duser.language=en',
+            '-Xmx1024m',
+            // Force-load our plugin on the classpath
+            '-Drunelite.plugin.class=com.example.osrstts.OsrsTtsPlugin'
+    ]
+}
+
+tasks.run {
+    // Launch RuneLite with our plugin on the classpath; it will be discoverable via classpath scanning
+    dependsOn ':osrs-tts-runelite-plugin:classes'
+}

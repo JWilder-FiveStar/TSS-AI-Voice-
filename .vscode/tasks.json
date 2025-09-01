@@ -1,0 +1,76 @@
+{
+  // Tasks to build the plugin jar and run RuneLite for local IDE usage
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build OSRS TTS plugin (jar)",
+      "type": "shell",
+      "command": ".\\gradlew.bat",
+      "args": [
+        ":osrs-tts-runelite-plugin:jar"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run RuneLite (dev-run with plugin)",
+      "type": "shell",
+      "command": ".\\gradlew.bat",
+      "args": [
+        ":dev-run:run"
+      ],
+      "problemMatcher": [],
+      "dependsOn": [
+        "Build OSRS TTS plugin (jar)"
+      ]
+    },
+    {
+      "label": "Copy plugin to RuneLite plugins folder",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "$jar=Join-Path $PWD 'osrs-tts-runelite-plugin\\build\\libs\\osrs-tts-runelite-plugin-1.0-SNAPSHOT.jar'; $dest=Join-Path $env:USERPROFILE '.runelite\\plugins'; New-Item -ItemType Directory -Force -Path $dest | Out-Null; Copy-Item -Force $jar $dest"
+      ],
+      "dependsOn": [
+        "Build OSRS TTS plugin (jar)"
+      ]
+    },
+    {
+      "label": "Run RuneLite (from PATH)",
+      "type": "shell",
+      "command": "RuneLite.exe",
+      "problemMatcher": [],
+      "dependsOn": [
+        "Copy plugin to RuneLite plugins folder"
+      ]
+    },
+    {
+      "label": "Open RuneLite client.log",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "& { $p = Join-Path $env:USERPROFILE '.runelite\\logs\\client.log'; if (Test-Path $p) { Get-Content -Wait -Tail 200 $p } else { Write-Host 'client.log not found at ' $p } }"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Run plugin (template run-test)",
+      "type": "shell",
+      "command": ".\\gradlew.bat",
+      "args": [
+        ":osrs-tts-runelite-plugin:runPlugin"
+      ],
+      "problemMatcher": [],
+      "dependsOn": [
+        "Build OSRS TTS plugin (jar)"
+      ]
+    }
+  ]
+}

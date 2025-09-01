@@ -15,8 +15,20 @@ public class OsrsTtsConfig {
 
     public OsrsTtsConfig() {
         Parameters params = new Parameters();
+        File configFile = new File(CONFIG_FILE);
+        
+        // Create config file if it doesn't exist
+        if (!configFile.exists()) {
+            try {
+                configFile.createNewFile();
+            } catch (Exception e) {
+                // Continue - Commons Config will handle this
+            }
+        }
+        
         builder = new FileBasedConfigurationBuilder<>(PropertiesConfiguration.class)
-                .configure(params.properties().setFile(new File(CONFIG_FILE)));
+                .configure(params.properties().setFile(configFile));
+        
         try {
             config = builder.getConfiguration();
             ensureDefaults();
