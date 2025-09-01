@@ -1,3 +1,11 @@
+.tts-cache/
+osrs-tts-config.properties
+*.secrets.*
+*.env
+target/
+dist/
+node_modules/
+*.log
 .gradle
 build
 .idea/

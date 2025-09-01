@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Implementation-Title: OSRS TTS RuneLite Plugin
+Implementation-Version: 1.0.0
+Main-Class: com.example.osrstts.OsrsTtsPlugin
+Built-By: YourName
+Created-By: YourName
+Specification-Version: 1.0.0
+Specification-Title: OSRS TTS Plugin
+Implementation-Vendor: YourVendor
+Implementation-URL: https://github.com/your-repo/osrs-tts-runelite-plugin

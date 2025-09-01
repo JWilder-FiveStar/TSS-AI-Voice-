@@ -1,0 +1,6 @@
+This file explains how secrets are used for the OSRS TTS plugin.
+
+- Preferred: set env vars AZURE_SPEECH_KEY and AZURE_SPEECH_REGION.
+- Alternatively: store values in osrs-tts-config.properties next to the repo root. This file is gitignored.
+
+Keys should not be committed to source control. If keys were exposed, rotate them immediately in Azure Portal.

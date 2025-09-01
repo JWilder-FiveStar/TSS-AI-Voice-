@@ -1,0 +1,33 @@
+{
+  "npcExact": {
+    "King Roald": "en-GB-RyanNeural",
+    "Sir Amik Varze": "en-GB-RyanNeural",
+    "Duke Horacio": "en-GB-OwenNeural",
+    "Count Draynor": "en-GB-NoahNeural",
+    "Azzanadra": "en-GB-GuyNeural",
+  "Wise Old Man": "en-GB-BrianNeural",
+  "Hans": "en-GB-AlfieNeural",
+  "King Arthur": "en-GB-OwenNeural",
+  "Merlin": "en-GB-AlfieNeural",
+  "Sir Lancelot": "en-IE-ConnorNeural",
+  "Sir Galahad": "en-GB-GeorgeNeural"
+  },
+  "npcRegex": {
+    ".*Guard.*": "en-GB-RyanNeural",
+    ".*Wizard.*": "en-GB-AlfieNeural",
+    ".*Vamp.*": "en-GB-NoahNeural",
+  ".*Monk.*": "en-GB-ElliotNeural",
+  ".*Knight.*": "en-GB-RyanNeural",
+  ".*Priest.*": "en-GB-ElliotNeural",
+  ".*Pirate.*": "en-AU-WilliamNeural"
+  },
+  "tags": {
+    "royalty": "en-GB-OwenNeural",
+    "bandit": "en-IE-ConnorNeural",
+    "pirate": "en-AU-WilliamNeural",
+    "dwarf": "en-GB-GeorgeNeural",
+    "goblin": "en-GB-ArchieNeural",
+    "female": "en-GB-LibbyNeural",
+    "male": "en-GB-RyanNeural"
+  }
+}
