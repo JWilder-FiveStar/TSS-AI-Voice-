@@ -30,6 +30,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
     implementation 'org.apache.commons:commons-configuration2:2.10.1'
     implementation 'commons-beanutils:commons-beanutils:1.9.4'
+    // MP3 decoding fallback for ElevenLabs when WAV isn't returned (Central-hosted)
+    implementation 'com.googlecode.soundlibs:jlayer:1.0.1-1'
 
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
@@ -80,5 +82,7 @@ tasks.register('runPlugin', JavaExec) {
     dependsOn testClasses
     mainClass = 'com.example.osrstts.OsrsTtsPluginTest'
     classpath = sourceSets.test.runtimeClasspath
-    jvmArgs '-ea', '-Duser.country=US', '-Duser.language=en', '-Xmx1024m'
+    // Force RuneLite to use your real userhome so credentials.properties is picked up
+    def userHome = System.getProperty('user.home').replace('\\', '/')
+    jvmArgs '-ea', '-Duser.country=US', '-Duser.language=en', '-Xmx1024m', "-Drunelite.userhome=${userHome}/.runelite", '-Dosrs.tts.debug=true'
 }

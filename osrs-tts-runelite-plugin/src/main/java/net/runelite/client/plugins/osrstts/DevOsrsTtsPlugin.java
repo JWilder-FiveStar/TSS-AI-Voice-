@@ -1,12 +1,7 @@
 package net.runelite.client.plugins.osrstts;
 
-import net.runelite.client.plugins.PluginDescriptor;
-
-// Wrapper so RuneLite's classpath scanner finds this plugin during dev-run
-@PluginDescriptor(
-        name = "OSRS TTS (Dev)",
-        description = "Text-to-Speech plugin for Old School RuneScape - Dev Run",
-        tags = {"tts", "text-to-speech", "osrs"}
-)
-public class DevOsrsTtsPlugin extends com.example.osrstts.OsrsTtsPlugin {
+// NOTE: Disabled to avoid duplicate plugin scanning during dev runs.
+// This class intentionally has no @PluginDescriptor and is package-private.
+// If you need a wrapper again, add the annotation back and ensure only one plugin is loaded.
+class DevOsrsTtsPlugin extends com.example.osrstts.OsrsTtsPlugin {
 }

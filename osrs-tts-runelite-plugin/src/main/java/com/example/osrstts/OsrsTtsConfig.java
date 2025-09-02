@@ -47,8 +47,15 @@ public class OsrsTtsConfig {
 
         // Narrator mode for books/journals/scrolls
         setIfMissing("tts.narrator.enabled", "true");
-        setIfMissing("tts.narrator.voice", "en-GB-GuyNeural");
+        setIfMissing("tts.narrator.voice", "en-US-JennyNeural");
         setIfMissing("tts.narrator.style", "narration-professional");
+
+        // Player (self) voice
+        setIfMissing("tts.player.voice", "en-US-DavisNeural");
+        // NPC category defaults
+        setIfMissing("tts.npc.male.voice", "en-US-GuyNeural");
+        setIfMissing("tts.npc.female.voice", "en-US-JennyNeural");
+        setIfMissing("tts.npc.kid.voice", "en-US-JennyNeural");
 
         // Playback
         setIfMissing("tts.autoPlay", "true");
@@ -60,6 +67,9 @@ public class OsrsTtsConfig {
 
         // Azure defaults (key via env preferred)
         setIfMissing("azure.region", "eastus");
+        // ElevenLabs defaults
+        setIfMissing("eleven.key", "");
+        setIfMissing("eleven.model", "eleven_turbo_v2_5");
 
         // AWS defaults (optional)
         setIfMissing("aws.region", "us-east-1");
@@ -139,7 +149,7 @@ public class OsrsTtsConfig {
     }
 
     public String getNarratorVoice() {
-        return config.getString("tts.narrator.voice", "en-GB-GuyNeural");
+        return config.getString("tts.narrator.voice", "en-US-JennyNeural");
     }
 
     public void setNarratorVoice(String voice) {
@@ -155,6 +165,24 @@ public class OsrsTtsConfig {
         config.setProperty("tts.narrator.style", style);
         saveQuietly();
     }
+
+    // Player voice
+    public String getPlayerVoice() {
+        return config.getString("tts.player.voice", "en-US-DavisNeural");
+    }
+
+    public void setPlayerVoice(String voice) {
+        config.setProperty("tts.player.voice", voice);
+        saveQuietly();
+    }
+
+    // NPC category voices
+    public String getNpcMaleVoice() { return config.getString("tts.npc.male.voice", "en-US-GuyNeural"); }
+    public void setNpcMaleVoice(String v) { config.setProperty("tts.npc.male.voice", v); saveQuietly(); }
+    public String getNpcFemaleVoice() { return config.getString("tts.npc.female.voice", "en-US-JennyNeural"); }
+    public void setNpcFemaleVoice(String v) { config.setProperty("tts.npc.female.voice", v); saveQuietly(); }
+    public String getNpcKidVoice() { return config.getString("tts.npc.kid.voice", "en-US-JennyNeural"); }
+    public void setNpcKidVoice(String v) { config.setProperty("tts.npc.kid.voice", v); saveQuietly(); }
 
     // Playback and audio format
     public boolean isAutoPlay() {
@@ -214,6 +242,15 @@ public class OsrsTtsConfig {
         config.setProperty("azure.region", region);
         saveQuietly();
     }
+
+    // ElevenLabs
+    public String getElevenKey() {
+        String env = System.getenv("ELEVEN_API_KEY");
+        return env != null && !env.isBlank() ? env : config.getString("eleven.key", "");
+    }
+    public void setElevenKey(String key) { config.setProperty("eleven.key", key); saveQuietly(); }
+    public String getElevenModel() { return config.getString("eleven.model", "eleven_turbo_v2_5"); }
+    public void setElevenModel(String model) { config.setProperty("eleven.model", model); saveQuietly(); }
 
     // AWS (optional fallback)
     public String getAwsRegion() {
