@@ -1,10 +1,13 @@
 package com.example.osrstts.voice;
 
 import com.example.osrstts.OsrsTtsConfig;
+import com.example.osrstts.cache.AudioCache;
+import com.example.osrstts.npc.NpcMetadataService;
 import com.example.osrstts.tts.AzureSpeechTtsClient;
 import com.example.osrstts.tts.PollyTtsClient;
 import com.example.osrstts.tts.TtsClient;
 import com.example.osrstts.tts.ElevenLabsTtsClient;
+import com.example.osrstts.usage.UsageTracker;
 
 import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
@@ -15,16 +18,30 @@ import javazoom.jl.player.Player;
 public class VoiceRuntime {
     private final OsrsTtsConfig cfg;
     private final VoiceSelector selector;
+    private final VoiceSelectionPipeline pipeline;
+    private final NpcMetadataService metadataService;
+    private final VoiceAssignmentService assignmentService;
     private final TtsClient tts;
     private final AudioCache cache;
+    private final UsageTracker usageTracker;
     private String lastPlayKey;
     private long lastPlayAtMs;
 
     // Known public 11Labs voice as a safe fallback
     private static final String DEFAULT_ELEVEN_VOICE = "Rachel (21m00Tcm4TlvDq8ikWAM)";
+    private static final String CURRENT_CACHE_VERSION = "1";
 
     public VoiceRuntime(OsrsTtsConfig cfg) {
         this.cfg = cfg;
+        
+        // Initialize services
+        String configDir = cfg.getCacheDir(); // Reuse cache dir for config storage
+        VoiceAssignmentStore assignmentStore = new VoiceAssignmentStore(configDir);
+        this.assignmentService = new VoiceAssignmentService(assignmentStore);
+        this.metadataService = new NpcMetadataService();
+        this.usageTracker = new UsageTracker(configDir);
+        
+        // Initialize legacy selector for fallback
         this.selector = new VoiceSelector(
                 cfg.getProvider(),
                 cfg.getDefaultVoice(),
@@ -33,66 +50,129 @@ public class VoiceRuntime {
                 cfg.getNpcFemaleVoice(),
                 cfg.getNpcKidVoice()
         );
+        
+        // Initialize new pipeline
+        this.pipeline = new VoiceSelectionPipeline(assignmentService, metadataService, selector);
+        
+        // Initialize TTS client
         String prov = cfg.getProvider();
         if ("ElevenLabs".equalsIgnoreCase(prov)) {
-            // Use 11Labs and request WAV-compatible output
             this.tts = new ElevenLabsTtsClient(cfg.getElevenKey(), cfg.getElevenModel(), "wav_22050");
         } else if ("Azure".equalsIgnoreCase(prov)) {
             this.tts = new AzureSpeechTtsClient(cfg.getAzureKey(), cfg.getAzureRegion(), cfg.getAudioOutputFormat());
         } else {
-            // Prefer WAV for unified playback by switching Polly to PCM if implemented.
             this.tts = new PollyTtsClient();
         }
-        this.cache = cfg.isCacheEnabled() ? new AudioCache(cfg.getCacheDir()) : null;
+        
+        // Initialize enhanced cache
+        this.cache = cfg.isCacheEnabled() ? new AudioCache(cfg.getCacheDir(), CURRENT_CACHE_VERSION) : null;
     }
 
     public void speakNpc(String npcName, String text, Set<String> tags) throws Exception {
-        VoiceSelection sel = selector.select(npcName, text, tags);
+        speakNpc(null, npcName, text, tags);
+    }
+    
+    public void speakNpc(Integer npcId, String npcName, String text, Set<String> tags) throws Exception {
         boolean debug = "true".equalsIgnoreCase(System.getProperty("osrs.tts.debug", "false"));
-        if ("ElevenLabs".equalsIgnoreCase(cfg.getProvider())) {
-            // Ensure sel.voiceName contains a voice_id (format: Name (id))
-            if (!looksElevenVoiceId(sel.voiceName)) {
-                String nv = cfg.getNarratorVoice();
-                String pv = cfg.getPlayerVoice();
-                String replacement = looksElevenVoiceId(nv) ? nv : (looksElevenVoiceId(pv) ? pv : null);
-                if (replacement == null) replacement = DEFAULT_ELEVEN_VOICE;
-                sel = VoiceSelection.of(replacement, sel.style);
-                if (debug) System.out.println("TTS NPC ElevenLabs: using voice '" + sel.voiceName + "'");
-            }
-        }
+        
+        // Use new pipeline for voice selection
+        VoiceSelectionPipeline.ProviderChoice choice = pipeline.selectVoice(npcId, npcName, text, tags);
+        
         if (debug) {
-            System.out.println("TTS NPC sel voice=" + sel.voiceName + ", tags=" + (tags == null ? "[]" : tags.toString()) + ", npc='" + npcName + "'");
+            System.out.println("TTS NPC pipeline choice: provider=" + choice.provider() + 
+                             ", voiceId=" + choice.voiceId() + ", style=" + choice.style() + 
+                             ", npc='" + npcName + "' (id=" + npcId + ")");
         }
-        String cacheKey = cacheKey("npc", sel, text);
+        
+        // Generate cache key
+        String normalizedText = AudioCache.normalizeText(text);
+        String npcKey = com.example.osrstts.npc.NpcMetadata.generateNpcKey(npcName, npcId);
+        String cacheKey = cache != null ? 
+            cache.keyFor(choice.provider(), choice.voiceId(), npcKey, normalizedText) : 
+            legacyCacheKey("npc", choice.voiceId(), text);
+            
         if (!shouldPlay(cacheKey)) return;
+        
         try {
-            byte[] audio = getOrSynthesize(cacheKey, sel, text);
+            byte[] audio = getOrSynthesizeWithChoice(cacheKey, choice, normalizedText);
             playAudio(audio);
         } catch (RuntimeException ex) {
-            String msg = ex.getMessage() == null ? "" : ex.getMessage();
-            if (msg.contains("Azure TTS error 400")) {
-                // Retry with a safe fallback voice based on inferred gender
-                boolean female = tags != null && tags.contains("female");
-                boolean kid = tags != null && tags.contains("kid");
-                String fallbackVoice = kid ? "en-US-JennyNeural" : (female ? "en-US-JennyNeural" : "en-US-GuyNeural");
-                if (debug) {
-                    System.out.println("TTS NPC Azure 400, retry with fallback voice=" + fallbackVoice + ", npc='" + npcName + "'");
-                }
-                VoiceSelection fallbackSel = VoiceSelection.of(fallbackVoice, sel.style);
-                String fbKey = cacheKey("npc", fallbackSel, text);
-                try {
-                    byte[] audio = getOrSynthesize(fbKey, fallbackSel, text);
-                    playAudio(audio);
-                    return;
-                } catch (Exception ignored) {
-                    // give up to outer layer
-                }
-            }
-            throw ex;
+            handleSynthesisError(ex, npcId, npcName, text, tags, debug);
         }
     }
 
-    public void speakNarrator(String text) throws Exception {
+    /**
+     * Handle synthesis errors with intelligent fallback strategies.
+     */
+    private void handleSynthesisError(RuntimeException ex, Integer npcId, String npcName, String text, Set<String> tags, boolean debug) throws Exception {
+        String msg = ex.getMessage() == null ? "" : ex.getMessage();
+        
+        if (msg.contains("Azure TTS error 400")) {
+            // Retry with a safe fallback voice based on inferred gender
+            boolean female = tags != null && tags.contains("female");
+            boolean kid = tags != null && tags.contains("kid");
+            String fallbackVoice = kid ? "en-US-JennyNeural" : (female ? "en-US-JennyNeural" : "en-US-GuyNeural");
+            
+            if (debug) {
+                System.out.println("TTS NPC Azure 400, retry with fallback voice=" + fallbackVoice + ", npc='" + npcName + "'");
+            }
+            
+            VoiceSelectionPipeline.ProviderChoice fallbackChoice = new VoiceSelectionPipeline.ProviderChoice(
+                "Azure", fallbackVoice, fallbackVoice, null
+            );
+            
+            String normalizedText = AudioCache.normalizeText(text);
+            String npcKey = com.example.osrstts.npc.NpcMetadata.generateNpcKey(npcName, npcId);
+            String fbKey = cache != null ? 
+                cache.keyFor(fallbackChoice.provider(), fallbackChoice.voiceId(), npcKey, normalizedText) :
+                legacyCacheKey("npc", fallbackChoice.voiceId(), text);
+                
+            try {
+                byte[] audio = getOrSynthesizeWithChoice(fbKey, fallbackChoice, normalizedText);
+                playAudio(audio);
+                return;
+            } catch (Exception ignored) {
+                // Fall through to throw original exception
+            }
+        }
+        
+        throw ex;
+    }
+    
+    /**
+     * Get or synthesize audio using the new choice system.
+     */
+    private byte[] getOrSynthesizeWithChoice(String cacheKey, VoiceSelectionPipeline.ProviderChoice choice, String normalizedText) throws Exception {
+        if (cache != null) {
+            // Use enhanced cache with single-flight
+            java.nio.file.Path audioPath = cache.getOrCompute(cacheKey, () -> {
+                try {
+                    return synthesizeWithChoice(choice, normalizedText);
+                } catch (Exception e) {
+                    throw new RuntimeException("Synthesis failed", e);
+                }
+            }).get();
+            return java.nio.file.Files.readAllBytes(audioPath);
+        } else {
+            // Direct synthesis without caching
+            return synthesizeWithChoice(choice, normalizedText);
+        }
+    }
+    
+    /**
+     * Synthesize audio using provider choice.
+     */
+    private byte[] synthesizeWithChoice(VoiceSelectionPipeline.ProviderChoice choice, String text) throws Exception {
+        // Create VoiceSelection for compatibility with existing TTS clients
+        VoiceSelection selection = VoiceSelection.of(choice.voiceId(), choice.style());
+        
+        // Track usage for cost estimation
+        if (usageTracker != null) {
+            usageTracker.addCharacters(text.length());
+        }
+        
+        return tts.synthesize(text, selection);
+    }
         VoiceSelection sel;
         String prov = cfg.getProvider();
         if ("Azure".equalsIgnoreCase(prov)) {
@@ -312,5 +392,40 @@ public class VoiceRuntime {
             clip.open(ais);
             clip.start();
         } catch (Throwable ignored) {}
+    }
+    
+    /**
+     * Legacy cache key generation for backward compatibility.
+     */
+    private String legacyCacheKey(String kind, String voiceId, String text) {
+        return kind + "_" + voiceId + "_" + Math.abs(text.hashCode());
+    }
+    
+    /**
+     * Get the voice assignment service for UI integration.
+     */
+    public VoiceAssignmentService getAssignmentService() {
+        return assignmentService;
+    }
+    
+    /**
+     * Get the usage tracker for UI integration.
+     */
+    public UsageTracker getUsageTracker() {
+        return usageTracker;
+    }
+    
+    /**
+     * Get the voice selection pipeline for UI integration.
+     */
+    public VoiceSelectionPipeline getPipeline() {
+        return pipeline;
+    }
+    
+    /**
+     * Get the cache for UI integration.
+     */
+    public AudioCache getCache() {
+        return cache;
     }
 }
