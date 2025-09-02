@@ -55,6 +55,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
     private final JLabel voicesStatusLabel = new JLabel("Voices: 0");
 
     private javax.swing.Timer debounceTimer;
+    private JSlider volumeSlider;
 
     private static final List<String> AZURE_REGIONS = Arrays.asList(
             "eastus", "eastus2", "southcentralus", "westus", "westus2", "westus3",
@@ -96,14 +97,30 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         providerCombo.setSelectedItem(config.provider());
         add(providerCombo, gbc);
 
+        // Volume slider
+        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 1;
+        add(new JLabel("Volume:"), gbc);
+        gbc.gridx = 1;
+        volumeSlider = new JSlider(0, 100, plugin != null && plugin.config != null ? plugin.config.getVolumePercent() : 80);
+        volumeSlider.setMajorTickSpacing(25);
+        volumeSlider.setMinorTickSpacing(5);
+        volumeSlider.setPaintTicks(true);
+        volumeSlider.setPaintLabels(true);
+        volumeSlider.addChangeListener(e -> {
+            if (plugin != null && plugin.config != null) {
+                plugin.config.setVolumePercent(volumeSlider.getValue());
+            }
+        });
+        add(volumeSlider, gbc);
+
         // Azure section header
-        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
+    gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
         azureHeaderLabel = new JLabel("Azure Speech Settings");
         azureHeaderLabel.setFont(azureHeaderLabel.getFont().deriveFont(Font.BOLD));
         add(azureHeaderLabel, gbc);
 
         // Azure Key with show/hide toggle
-        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 1;
         azureKeyLabel = new JLabel("Azure Speech Key:");
         add(azureKeyLabel, gbc);
         gbc.gridx = 1;
@@ -125,7 +142,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(azureKeyRow, gbc);
 
         // Azure Region (dropdown)
-        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 1;
         azureRegionLabel = new JLabel("Azure Region:");
         add(azureRegionLabel, gbc);
         gbc.gridx = 1;
@@ -140,18 +157,18 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(azureRegionCombo, gbc);
 
         // Voice status label (right aligned)
-        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;
+    gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 2;
         voicesStatusLabel.setHorizontalAlignment(SwingConstants.RIGHT);
         add(voicesStatusLabel, gbc);
 
         // ElevenLabs section header
-        gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 2;
+    gbc.gridx = 0; gbc.gridy = 7; gbc.gridwidth = 2;
         elevenHeaderLabel = new JLabel("ElevenLabs Settings");
         elevenHeaderLabel.setFont(elevenHeaderLabel.getFont().deriveFont(Font.BOLD));
         add(elevenHeaderLabel, gbc);
 
         // ElevenLabs API Key with show/hide
-        gbc.gridx = 0; gbc.gridy = 7; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 1;
         elevenKeyLabel = new JLabel("ElevenLabs API Key:");
         add(elevenKeyLabel, gbc);
         gbc.gridx = 1;
@@ -173,7 +190,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(elevenKeyRow, gbc);
 
         // ElevenLabs Model
-        gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 9; gbc.gridwidth = 1;
         elevenModelLabel = new JLabel("ElevenLabs Model:");
         add(elevenModelLabel, gbc);
         gbc.gridx = 1;
@@ -181,7 +198,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(elevenModelField, gbc);
 
         // Test buttons
-        gbc.gridx = 0; gbc.gridy = 9; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 10; gbc.gridwidth = 1;
         JButton testButton = new JButton("🔊 Test Voice");
         add(testButton, gbc);
         testButton.addActionListener(new ActionListener() {
@@ -191,7 +208,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
                 plugin.testVoice();
             }
         });
-        gbc.gridx = 1; gbc.gridy = 9; gbc.gridwidth = 1;
+    gbc.gridx = 1; gbc.gridy = 10; gbc.gridwidth = 1;
         JButton testPlayerButton = new JButton("🔊 Test Player Voice");
         add(testPlayerButton, gbc);
         testPlayerButton.addActionListener(new ActionListener() {
@@ -203,18 +220,18 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         });
 
         // Voice Settings section header
-        gbc.gridx = 0; gbc.gridy = 10; gbc.gridwidth = 2;
+    gbc.gridx = 0; gbc.gridy = 11; gbc.gridwidth = 2;
         JLabel voiceHeader = new JLabel("Voice Settings");
         voiceHeader.setFont(voiceHeader.getFont().deriveFont(Font.BOLD));
         add(voiceHeader, gbc);
 
         // Narrator enabled
-        gbc.gridx = 0; gbc.gridy = 11; gbc.gridwidth = 2;
+    gbc.gridx = 0; gbc.gridy = 12; gbc.gridwidth = 2;
         narratorEnabledCheckbox = new JCheckBox("Narrator for books/journals", config.narratorEnabled());
         add(narratorEnabledCheckbox, gbc);
 
         // Narrator Voice picker (pop-out)
-        gbc.gridx = 0; gbc.gridy = 12; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 13; gbc.gridwidth = 1;
         add(new JLabel("Narrator Voice:"), gbc);
         gbc.gridx = 1; gbc.gridwidth = 1;
         JPanel narrRow = new JPanel(new BorderLayout(5, 0));
@@ -227,7 +244,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(narrRow, gbc);
 
         // Player Voice picker (pop-out)
-        gbc.gridx = 0; gbc.gridy = 13; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 14; gbc.gridwidth = 1;
         add(new JLabel("Player Voice:"), gbc);
         gbc.gridx = 1; gbc.gridwidth = 1;
         JPanel playerRow = new JPanel(new BorderLayout(5, 0));
@@ -241,7 +258,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(playerRow, gbc);
 
         // Save Button
-        gbc.gridx = 0; gbc.gridy = 14; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 15; gbc.gridwidth = 1;
         JButton saveButton = new JButton("💾 Save Settings");
         add(saveButton, gbc);
         saveButton.addActionListener(new ActionListener() {
@@ -254,10 +271,19 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         });
 
         // Lore Voice Selector
-        gbc.gridx = 1; gbc.gridy = 14; gbc.gridwidth = 1;
+        gbc.gridx = 1; gbc.gridy = 15; gbc.gridwidth = 1;
         JButton loreSelectorBtn = new JButton("📜 Lore Voice Selector…");
         add(loreSelectorBtn, gbc);
         loreSelectorBtn.addActionListener(e -> openLoreSelectorDialog());
+
+        // Advanced settings launcher
+        gbc.gridx = 0; gbc.gridy = 16; gbc.gridwidth = 2;
+        JButton advancedBtn = new JButton("⚙️ Advanced Settings…");
+        add(advancedBtn, gbc);
+        advancedBtn.addActionListener(e -> {
+            java.awt.Window owner = SwingUtilities.getWindowAncestor(this);
+            new com.example.osrstts.ui.AdvancedSettingsDialog(owner, plugin, config, configManager).setVisible(true);
+        });
 
         // Wire provider change to update UI and save immediately
         providerCombo.addActionListener(e -> onProviderChanged());

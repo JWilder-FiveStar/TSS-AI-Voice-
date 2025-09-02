@@ -1,0 +1,30 @@
+{
+  "romeo" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "voiceLabel" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "assignedAtEpochMs" : 1756830393142,
+    "assignedBy" : "auto"
+  },
+  "aris" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "voiceLabel" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "assignedAtEpochMs" : 1756830414763,
+    "assignedBy" : "auto"
+  },
+  "zaff" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "voiceLabel" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "assignedAtEpochMs" : 1756830576768,
+    "assignedBy" : "auto"
+  },
+  "master smithing tutor" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "voiceLabel" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "assignedAtEpochMs" : 1756830617582,
+    "assignedBy" : "auto"
+  }
+}

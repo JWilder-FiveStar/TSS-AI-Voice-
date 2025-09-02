@@ -39,7 +39,7 @@ public class OsrsTtsConfig {
 
     private void ensureDefaults() {
         // Provider and strategy
-        setIfMissing("tts.provider", "Azure");                // Azure | Polly
+    setIfMissing("tts.provider", "ElevenLabs");           // ElevenLabs | Azure | Polly
         setIfMissing("tts.api", getProvider());                // backward-compat shadow
         setIfMissing("tts.voice.strategy", "intelligent");    // intelligent | single | npc-mapped
         setIfMissing("tts.voice.default", "auto");            // provider voice or "auto"
@@ -62,8 +62,9 @@ public class OsrsTtsConfig {
         setIfMissing("tts.audio.format", "riff-24000hz-16bit-mono-pcm"); // WAV easy playback
 
         // Caching
-        setIfMissing("tts.cache.enabled", "true");
-        setIfMissing("tts.cache.dir", ".tts-cache");
+    setIfMissing("tts.cache.enabled", "true");
+    setIfMissing("tts.cache.dir", "cache/osrs-tts");
+    setIfMissing("tts.playback.volume", "80"); // percent 0-100
 
         // Azure defaults (key via env preferred)
         setIfMissing("azure.region", "eastus");
@@ -214,11 +215,21 @@ public class OsrsTtsConfig {
     }
 
     public String getCacheDir() {
-        return config.getString("tts.cache.dir", ".tts-cache");
+    return config.getString("tts.cache.dir", "cache/osrs-tts");
     }
 
     public void setCacheDir(String dir) {
         config.setProperty("tts.cache.dir", dir);
+        saveQuietly();
+    }
+
+    // Volume
+    public int getVolumePercent() {
+        return config.getInt("tts.playback.volume", 80);
+    }
+    public void setVolumePercent(int v) {
+        int vv = Math.max(0, Math.min(100, v));
+        config.setProperty("tts.playback.volume", vv);
         saveQuietly();
     }
 

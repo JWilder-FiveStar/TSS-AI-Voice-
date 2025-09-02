@@ -5,6 +5,8 @@ import com.example.osrstts.tts.AzureSpeechTtsClient;
 import com.example.osrstts.tts.PollyTtsClient;
 import com.example.osrstts.tts.TtsClient;
 import com.example.osrstts.tts.ElevenLabsTtsClient;
+import com.example.osrstts.npc.NpcMetadataService;
+import com.example.osrstts.usage.UsageTracker;
 
 import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
@@ -17,6 +19,9 @@ public class VoiceRuntime {
     private final VoiceSelector selector;
     private final TtsClient tts;
     private final AudioCache cache;
+    private final UsageTracker usage;
+    private final VoiceAssignmentStore assignmentStore;
+    private final VoiceSelectionPipeline pipeline;
     private String lastPlayKey;
     private long lastPlayAtMs;
 
@@ -25,7 +30,7 @@ public class VoiceRuntime {
 
     public VoiceRuntime(OsrsTtsConfig cfg) {
         this.cfg = cfg;
-        this.selector = new VoiceSelector(
+    this.selector = new VoiceSelector(
                 cfg.getProvider(),
                 cfg.getDefaultVoice(),
                 cfg.getVoiceMappingFile(),
@@ -43,11 +48,14 @@ public class VoiceRuntime {
             // Prefer WAV for unified playback by switching Polly to PCM if implemented.
             this.tts = new PollyTtsClient();
         }
-        this.cache = cfg.isCacheEnabled() ? new AudioCache(cfg.getCacheDir()) : null;
+    this.cache = cfg.isCacheEnabled() ? new AudioCache(cfg.getCacheDir()) : null;
+    this.usage = new UsageTracker();
+    this.assignmentStore = new VoiceAssignmentStore();
+    this.pipeline = new VoiceSelectionPipeline(cfg.getProvider(), selector, assignmentStore, new NpcMetadataService());
     }
 
     public void speakNpc(String npcName, String text, Set<String> tags) throws Exception {
-        VoiceSelection sel = selector.select(npcName, text, tags);
+    VoiceSelection sel = pipeline.chooseForNpc(null, npcName, text, tags);
         boolean debug = "true".equalsIgnoreCase(System.getProperty("osrs.tts.debug", "false"));
         if ("ElevenLabs".equalsIgnoreCase(cfg.getProvider())) {
             // Ensure sel.voiceName contains a voice_id (format: Name (id))
@@ -63,10 +71,12 @@ public class VoiceRuntime {
         if (debug) {
             System.out.println("TTS NPC sel voice=" + sel.voiceName + ", tags=" + (tags == null ? "[]" : tags.toString()) + ", npc='" + npcName + "'");
         }
-        String cacheKey = cacheKey("npc", sel, text);
+    String normalized = AudioCache.normalizeText(text);
+    String npcKey = (npcName == null || npcName.isEmpty()) ? "npc" : npcName.toLowerCase();
+    String cacheKey = cacheKey("npc", sel, normalized);
         if (!shouldPlay(cacheKey)) return;
         try {
-            byte[] audio = getOrSynthesize(cacheKey, sel, text);
+            byte[] audio = getOrSynthesize(cacheKey, sel, normalized);
             playAudio(audio);
         } catch (RuntimeException ex) {
             String msg = ex.getMessage() == null ? "" : ex.getMessage();
@@ -93,7 +103,7 @@ public class VoiceRuntime {
     }
 
     public void speakNarrator(String text) throws Exception {
-        VoiceSelection sel;
+    VoiceSelection sel;
         String prov = cfg.getProvider();
         if ("Azure".equalsIgnoreCase(prov)) {
             sel = VoiceSelection.of(cfg.getNarratorVoice(), cfg.getNarratorStyle());
@@ -114,9 +124,10 @@ public class VoiceRuntime {
         } else {
             sel = VoiceSelection.of("Joanna", null); // Polly narrator default
         }
-        String cacheKey = cacheKey("narrator", sel, text);
+    String normalized = AudioCache.normalizeText(text);
+    String cacheKey = cacheKey("narrator", sel, normalized);
         if (!shouldPlay(cacheKey)) return;
-        byte[] audio = getOrSynthesize(cacheKey, sel, text);
+    byte[] audio = getOrSynthesize(cacheKey, sel, normalized);
         playAudio(audio);
     }
 
@@ -129,10 +140,11 @@ public class VoiceRuntime {
                 System.out.println("TTS Player ElevenLabs: using voice '" + v + "'");
             }
         }
-        VoiceSelection sel = VoiceSelection.of(v, null);
-        String cacheKey = cacheKey("player", sel, text);
+    VoiceSelection sel = VoiceSelection.of(v, null);
+    String normalized = AudioCache.normalizeText(text);
+    String cacheKey = cacheKey("player", sel, normalized);
         if (!shouldPlay(cacheKey)) return;
-        byte[] audio = getOrSynthesize(cacheKey, sel, text);
+    byte[] audio = getOrSynthesize(cacheKey, sel, normalized);
         playAudio(audio);
     }
 
@@ -146,14 +158,15 @@ public class VoiceRuntime {
         return true;
     }
 
-    private byte[] getOrSynthesize(String key, VoiceSelection sel, String text) throws Exception {
+    private byte[] getOrSynthesize(String key, VoiceSelection sel, String normalizedText) throws Exception {
         if (cache != null) {
             byte[] hitWav = cache.get(key, "wav");
             if (hitWav != null) return hitWav;
             byte[] hitMp3 = cache.get(key, "mp3");
             if (hitMp3 != null) return hitMp3;
         }
-        byte[] data = tts.synthesize(text, sel);
+        byte[] data = tts.synthesize(normalizedText, sel);
+        usage.addCharacters(normalizedText.length());
         if (cache != null) {
             if (looksRiffWav(data)) cache.put(key, "wav", data);
             else if (looksMp3(data)) cache.put(key, "mp3", data);
@@ -172,10 +185,13 @@ public class VoiceRuntime {
                 || (data != null && data.length >= 2 && (data[0] & 0xFF) == 0xFF && ((data[1] & 0xE0) == 0xE0));
     }
 
-    private String cacheKey(String kind, VoiceSelection sel, String text) {
-        String base = cfg.getProvider() + "|" + kind + "|" + (sel.voiceName == null ? "auto" : sel.voiceName) + "|" + (sel.style == null ? "-" : sel.style);
-        int hash = text.hashCode();
-        return base + "|" + Integer.toHexString(hash);
+    private String cacheKey(String kind, VoiceSelection sel, String normalizedText) {
+        if (cache == null) {
+            String base = cfg.getProvider() + "|" + kind + "|" + (sel.voiceName == null ? "auto" : sel.voiceName) + "|" + (sel.style == null ? "-" : sel.style);
+            return base + "|" + Integer.toHexString(normalizedText.hashCode());
+        }
+        String npcKey = kind;
+        return cache.keyFor(cfg.getProvider(), sel.voiceName, npcKey, normalizedText, AudioCache.CURRENT_VERSION);
     }
 
     // Optional tag inference helper for future use
@@ -259,6 +275,7 @@ public class VoiceRuntime {
             try (ByteArrayInputStream bais = new ByteArrayInputStream(data); AudioInputStream ais = AudioSystem.getAudioInputStream(bais)) {
                 Clip clip = AudioSystem.getClip();
                 clip.open(ais);
+                applyVolume(clip);
                 clip.start();
                 return;
             } catch (Throwable clipErr) {
@@ -280,6 +297,7 @@ public class VoiceRuntime {
                         try (SourceDataLine line = (SourceDataLine) AudioSystem.getLine(info)) {
                             line.open(pcmStream.getFormat());
                             line.start();
+                            applyVolume(line);
                             byte[] buf = new byte[4096];
                             int n;
                             while ((n = pcmStream.read(buf, 0, buf.length)) > 0) {
@@ -310,7 +328,26 @@ public class VoiceRuntime {
         try (ByteArrayInputStream bais = new ByteArrayInputStream(data); AudioInputStream ais = AudioSystem.getAudioInputStream(bais)) {
             Clip clip = AudioSystem.getClip();
             clip.open(ais);
+            applyVolume(clip);
             clip.start();
         } catch (Throwable ignored) {}
+    }
+
+    private void applyVolume(Line line) {
+        try {
+            int vol = cfg.getVolumePercent();
+            float gain = volumePercentToDb(vol);
+            if (line.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                FloatControl ctrl = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
+                float clamped = Math.max(ctrl.getMinimum(), Math.min(ctrl.getMaximum(), gain));
+                ctrl.setValue(clamped);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private static float volumePercentToDb(int percent) {
+        float p = Math.max(0, Math.min(100, percent)) / 100f;
+        if (p <= 0.0001f) return -80f; // effectively mute
+        return (float)(20.0 * Math.log10(p));
     }
 }
