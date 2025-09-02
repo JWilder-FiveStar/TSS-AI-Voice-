@@ -297,6 +297,13 @@ public class VoiceSelector {
         return pool[RNG.nextInt(pool.length)];
     }
 
+    /**
+     * Get the current provider for this selector.
+     */
+    public String getProvider() {
+        return provider;
+    }
+
     private String inferStyle(String text) {
         if (text == null) return null;
         String t = text.trim();

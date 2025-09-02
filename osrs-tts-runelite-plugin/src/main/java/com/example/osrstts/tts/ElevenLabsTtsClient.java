@@ -1,6 +1,8 @@
 package com.example.osrstts.tts;
 
 import com.example.osrstts.voice.VoiceSelection;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -13,6 +15,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class ElevenLabsTtsClient implements TtsClient {
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    
     private final String apiKey;
     private final String modelId;
     private final String outputFormat; // preferred format
@@ -105,6 +109,27 @@ public class ElevenLabsTtsClient implements TtsClient {
         return "{" + "\"stability\":" + stability + ",\"similarity_boost\":" + similarity + "}";
     }
 
+    /**
+     * List all available voices for the current user.
+     * Returns both premade and custom voices.
+     */
+    public List<ElevenVoice> listVoices() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.elevenlabs.io/v1/voices"))
+                .timeout(Duration.ofSeconds(15))
+                .header("xi-api-key", apiKey.trim())
+                .header("accept", "application/json")
+                .GET()
+                .build();
+                
+        HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        if (resp.statusCode() / 100 != 2) {
+            throw new RuntimeException("Failed to list voices: " + resp.statusCode() + " - " + resp.body());
+        }
+        
+        return parseVoicesResponse(resp.body());
+    }
+    
     public String listVoicesSample() throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.elevenlabs.io/v1/voices"))
@@ -116,6 +141,27 @@ public class ElevenLabsTtsClient implements TtsClient {
         HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (resp.statusCode() / 100 == 2) return resp.body();
         return "Voices list failed " + resp.statusCode() + ": " + resp.body();
+    }
+    
+    private List<ElevenVoice> parseVoicesResponse(String jsonResponse) {
+        List<ElevenVoice> voices = new ArrayList<>();
+        try {
+            JsonNode root = MAPPER.readTree(jsonResponse);
+            JsonNode voicesArray = root.get("voices");
+            
+            if (voicesArray != null && voicesArray.isArray()) {
+                for (JsonNode voiceNode : voicesArray) {
+                    String id = voiceNode.get("voice_id").asText();
+                    String name = voiceNode.get("name").asText();
+                    String category = voiceNode.has("category") ? voiceNode.get("category").asText() : "unknown";
+                    
+                    voices.add(new ElevenVoice(id, name, category));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Could not parse voices response: " + e.getMessage());
+        }
+        return voices;
     }
 
     private static String jsonField(String k, String v) {
