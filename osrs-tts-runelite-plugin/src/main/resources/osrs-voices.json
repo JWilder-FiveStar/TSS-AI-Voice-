@@ -5,29 +5,64 @@
     "Duke Horacio": "en-GB-OwenNeural",
     "Count Draynor": "en-GB-NoahNeural",
     "Azzanadra": "en-GB-GuyNeural",
-  "Wise Old Man": "en-GB-BrianNeural",
-  "Hans": "en-GB-AlfieNeural",
-  "King Arthur": "en-GB-OwenNeural",
-  "Merlin": "en-GB-AlfieNeural",
-  "Sir Lancelot": "en-IE-ConnorNeural",
-  "Sir Galahad": "en-GB-GeorgeNeural"
+    "Wise Old Man": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)",
+    "Hans": "en-GB-AlfieNeural",
+    "King Arthur": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)",
+    "Merlin": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)",
+    "Sir Lancelot": "en-IE-ConnorNeural",
+    "Sir Galahad": "en-GB-GeorgeNeural"
   },
   "npcRegex": {
     ".*Guard.*": "en-GB-RyanNeural",
     ".*Wizard.*": "en-GB-AlfieNeural",
     ".*Vamp.*": "en-GB-NoahNeural",
-  ".*Monk.*": "en-GB-ElliotNeural",
-  ".*Knight.*": "en-GB-RyanNeural",
-  ".*Priest.*": "en-GB-ElliotNeural",
-  ".*Pirate.*": "en-AU-WilliamNeural"
+    ".*Monk.*": "en-GB-ElliotNeural",
+    ".*Knight.*": "en-GB-RyanNeural",
+    ".*Priest.*": "en-GB-ElliotNeural",
+    ".*Pirate.*": "en-AU-WilliamNeural",
+    "(?i)^King ": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)",
+    "(?i)^Queen ": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "(?i)^Prince ": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)",
+    "(?i)^Princess ": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)"
   },
   "tags": {
     "royalty": "en-GB-OwenNeural",
     "bandit": "en-IE-ConnorNeural",
     "pirate": "en-AU-WilliamNeural",
-    "dwarf": "en-GB-GeorgeNeural",
-    "goblin": "en-GB-ArchieNeural",
-    "female": "en-GB-LibbyNeural",
-    "male": "en-GB-RyanNeural"
+    "dwarf": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)",
+    "goblin": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)",
+    "elf": "ElevenLabs:Elli (MF3mGyEYCl7XYWbV9V6O)",
+    "ghost": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)",
+    "wizard": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)",
+    "female": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "male": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)",
+    "kid": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)",
+    "guard": "en-GB-RyanNeural",
+    "monk": "en-GB-ElliotNeural",
+    "nun": "en-GB-SoniaNeural",
+    "gnome": "en-GB-AlfieNeural"
+  },
+  "npcs": {
+    "wise-old-man": {
+      "gender": "male",
+      "tags": ["wizard", "old", "wise"]
+    },
+    "hans": {
+      "gender": "male", 
+      "tags": ["servant", "human"]
+    },
+    "cook": {
+      "gender": "male",
+      "tags": ["cook", "servant", "human"]
+    },
+    "npc_3344": {
+      "gender": "female",
+      "tags": ["elf", "archer"]
+    }
+  },
+  "genderOverrides": {
+    "zezima": "male",
+    "elena": "female",
+    "party-pete": "male"
   }
 }
