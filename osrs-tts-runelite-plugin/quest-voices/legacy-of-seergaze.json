@@ -1,0 +1,16 @@
+{
+  "npcExact": {
+    "Veliaf Hurtz": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=determined",
+    "Safalaan": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=concerned",
+    "Ivan Strom": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=steadfast",
+    "Vertida Sefalatis": "ElevenLabs:Fin (Xb7hH8MSUJpSbSDYk0k2)|style=watchful",
+    "Vanstrom Klause": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=sinister",
+    "Vyrewatch": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient",
+    "Misthalin citizen": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=anxious"
+  },
+  "tags": {
+    "myreque": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=earnest",
+    "vampyre": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=ominous",
+    "morytania": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=brooding"
+  }
+}

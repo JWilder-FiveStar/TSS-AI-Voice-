@@ -1,0 +1,14 @@
+{
+  "npcExact": {
+    "King Arthur": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=regal",
+    "Merlin": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=wise",
+    "Sir Galahad": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=pious",
+    "Sir Lancelot": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=valiant",
+    "Fisher King": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=aged",
+    "Black Knight Titan": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=booming"
+  },
+  "tags": {
+    "camelot": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=regal",
+    "knight": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=valiant"
+  }
+}

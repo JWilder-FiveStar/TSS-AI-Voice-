@@ -1,0 +1,15 @@
+{
+  "npcExact": {
+    "Radimus Erkle": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=expedition",
+    "Jungle Forester": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=softspoken",
+    "Ungadulu": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=possessed",
+    "Nezikchened": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=demonic",
+    "Sir Radimus": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=expedition",
+    "Jungle Savage": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=feral"
+  },
+  "tags": {
+    "jungle": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=softspoken",
+    "legend": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=expedition",
+    "demon": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=demonic"
+  }
+}

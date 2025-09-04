@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "Veldaban": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=stout",
+    "Rowdy Dwarf": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=rowdy",
+    "Drunken Dwarf": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=slurred",
+    "Kebab seller": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=merchant",
+    "Zanuck": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=craftsman"
+  },
+  "tags": {
+    "dwarf": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=stout",
+    "drunk": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=slurred"
+  }
+}

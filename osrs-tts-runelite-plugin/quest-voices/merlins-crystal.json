@@ -1,0 +1,14 @@
+{
+  "npcExact": {
+    "King Arthur": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=regal",
+    "Merlin": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=wise",
+    "Sir Gawain": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=chivalrous",
+    "Sir Lancelot": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=valiant",
+    "Lady of the Lake": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=ethereal",
+    "Morgan Le Faye": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=scheming"
+  },
+  "tags": {
+    "camelot": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=regal",
+    "knight": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=valiant"
+  }
+}

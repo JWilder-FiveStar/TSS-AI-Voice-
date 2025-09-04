@@ -1,0 +1,17 @@
+{
+  "npcExact": {
+    "Dr Fenkenstrain": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)|style=manic",
+    "Fenkenstrain's Monster": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=gravelly",
+    "Gardener Ghost": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=haunting",
+    "Fenkenstrain": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)|style=manic"
+  },
+  "npcRegex": {
+    "(?i)fenkenstrain.*monster": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=gravelly",
+    "(?i)dr\\.? fenkenstrain": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)|style=manic"
+  },
+  "tags": {
+    "fenkenstrain": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)|style=madscience",
+    "monster": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=booming",
+    "ghost": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=haunting"
+  }
+}

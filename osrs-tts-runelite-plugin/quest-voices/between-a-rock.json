@@ -1,0 +1,12 @@
+{
+  "npcExact": {
+    "Veldaban": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=stout",
+    "Boatman": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=cheery",
+    "King Alvis": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=regal",
+    "Dwarf Engineer": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=precise",
+    "Hilda": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=warm"
+  },
+  "tags": {
+    "dwarf": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=stout"
+  }
+}

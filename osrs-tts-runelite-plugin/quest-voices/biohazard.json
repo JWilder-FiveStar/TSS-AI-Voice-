@@ -1,0 +1,12 @@
+{
+  "npcExact": {
+    "Elena": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=gentle",
+    "Jerico": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=helpful",
+    "Omart": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=concerned",
+    "Clerk": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)|style=bureaucratic",
+    "Hops": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=timid"
+  },
+  "tags": {
+    "biohazard": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)|style=serious"
+  }
+}

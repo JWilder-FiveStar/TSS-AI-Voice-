@@ -1,0 +1,17 @@
+{
+  "npcExact": {
+    "King Narnode Shareen": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=worried",
+    "Garkor": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=command",
+    "Caranock": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=scheming",
+    "12th Squad Colonel": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=disciplined",
+    "Daero": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=calm",
+    "Waydar": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=pilot",
+    "Lumdo": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=nervous",
+    "Awowogei": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=regal",
+    "Monkey Ambassador": "ElevenLabs:Fin (Xb7hH8MSUJpSbSDYk0k2)|style=formal"
+  },
+  "tags": {
+    "gnome": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=measured",
+    "monkey": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=regal"
+  }
+}

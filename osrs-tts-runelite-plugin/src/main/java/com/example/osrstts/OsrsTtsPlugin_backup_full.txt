@@ -1,0 +1,7 @@
+BACKUP of original OsrsTtsPlugin.java before minimal isolation change.
+
+--- BEGIN ORIGINAL ---
+package com.example.osrstts;
+
+(imports and full 579-line content omitted for brevity in backup header; original file retained in git history if committed.)
+--- END ORIGINAL ---

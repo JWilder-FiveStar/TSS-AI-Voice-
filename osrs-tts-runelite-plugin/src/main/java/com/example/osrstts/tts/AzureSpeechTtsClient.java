@@ -8,6 +8,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import com.example.osrstts.OsrsTtsConfig;
 
 public class AzureSpeechTtsClient implements TtsClient {
     private final String key;
@@ -113,4 +114,9 @@ public class AzureSpeechTtsClient implements TtsClient {
             return "";
         }
     }
+
+    @Override public boolean isConfigured(OsrsTtsConfig config) { return key != null && !key.isBlank() && region != null && !region.isBlank(); }
+    @Override public boolean testConnection(OsrsTtsConfig config) { try { listVoicesSample(); return true; } catch (Exception e) { return false; } }
+    @Override public String getProviderName() { return "Azure"; }
+    @Override public void shutdown() { }
 }

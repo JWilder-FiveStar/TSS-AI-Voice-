@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "Lord Iorwerth": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=authoritative",
+    "Elena": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=concerned",
+    "Tyras Guard": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=stern",
+    "Islwyn": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient",
+    "Eluned": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=melodic"
+  },
+  "tags": {
+    "elf": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=elven",
+    "tirannwn": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient"
+  }
+}

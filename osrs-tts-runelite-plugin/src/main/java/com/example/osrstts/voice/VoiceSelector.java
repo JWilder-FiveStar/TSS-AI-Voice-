@@ -10,6 +10,11 @@ import java.util.regex.Pattern;
 
 public class VoiceSelector {
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    // Session-level tracking of unmapped NPC names to avoid duplicate writes
+    private static final java.util.Set<String> UNMAPPED = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
+    private volatile long lastReloadTime = System.currentTimeMillis();
+    private static final long RELOAD_INTERVAL_MS = Long.getLong("osrs.tts.mappingReloadMs", 10_000L); // 10s default when enabled
+    private final String initialMappingPath;
 
     private final String provider;          // "Azure" | "Polly" | "ElevenLabs"
     private final String defaultVoice;      // "auto" or provider voice name
@@ -141,7 +146,8 @@ public class VoiceSelector {
         this.npcMaleVoice = npcMaleVoice;
         this.npcFemaleVoice = npcFemaleVoice;
         this.npcKidVoice = npcKidVoice;
-        loadMapping(mappingFilePath);
+    this.initialMappingPath = mappingFilePath;
+    loadMapping(mappingFilePath);
     }
 
     private void loadMapping(String path) {
@@ -151,7 +157,7 @@ public class VoiceSelector {
                 if (f.exists()) {
                     String json = Files.readString(f.toPath());
                     parseMappingJson(json);
-                    return;
+                    // Don't return; still allow layered overrides below
                 }
             }
             // Fallback to classpath resource
@@ -161,6 +167,29 @@ public class VoiceSelector {
                     parseMappingJson(json);
                 }
             }
+            // Layer in optional quest-specific lore overrides if present (duplicates overwrite prior entries)
+            try (java.io.InputStream is = VoiceSelector.class.getClassLoader().getResourceAsStream("quest-npc-voices.json")) {
+                if (is != null) {
+                    String json = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                    parseMappingJson(json);
+                }
+            }
+            // Finally, if a filesystem folder 'quest-voices' exists beside the working directory, merge all *.json files
+            try {
+                java.nio.file.Path dir = java.nio.file.Path.of("quest-voices");
+                if (java.nio.file.Files.isDirectory(dir)) {
+                    try (var stream = java.nio.file.Files.list(dir)) {
+                        stream.filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".json"))
+                                .sorted() // deterministic order
+                                .forEach(p -> {
+                                    try {
+                                        String json = java.nio.file.Files.readString(p);
+                                        parseMappingJson(json);
+                                    } catch (Exception ignored) { }
+                                });
+                    }
+                }
+            } catch (Exception ignored) { }
         } catch (Exception ignored) {}
     }
 
@@ -182,16 +211,18 @@ public class VoiceSelector {
     }
 
     public VoiceSelection select(String npcName, String lineText, Set<String> inferredTags) {
+    maybeReload();
         String voice = null;
 
         if (npcName != null) {
-            String exact = exactNpcMap.get(npcName);
+            String exact = resolveProviderSpecific(exactNpcMap.get(npcName));
             if (exact != null) voice = exact;
 
             if (voice == null) {
                 for (var entry : regexNpcMap) {
-                    if (entry.getKey().matcher(npcName).find()) {
-                        voice = entry.getValue();
+                    String val = resolveProviderSpecific(entry.getValue());
+                    if (val != null && entry.getKey().matcher(npcName).find()) {
+                        voice = val;
                         break;
                     }
                 }
@@ -199,9 +230,14 @@ public class VoiceSelector {
         }
 
         if (voice == null && inferredTags != null) {
-            // Mapping file tag->voice first
+            String providerSuffix = provider == null ? "" : (provider.toLowerCase(Locale.ROOT).contains("eleven") ? "-eleven" : provider.toLowerCase(Locale.ROOT).contains("azure") ? "-azure" : "");
+            // Mapping file tag->voice first (exact tag or provider-suffixed variant)
             for (String tag : inferredTags) {
-                String mapped = tagMap.get(tag.toLowerCase(Locale.ROOT));
+                String baseKey = tag.toLowerCase(Locale.ROOT);
+                String mapped = resolveProviderSpecific(tagMap.get(baseKey));
+                if (mapped == null && !providerSuffix.isEmpty()) {
+                    mapped = resolveProviderSpecific(tagMap.get(baseKey + providerSuffix));
+                }
                 if (mapped != null) { voice = mapped; break; }
             }
             // Built-in defaults for lore tags by provider
@@ -228,7 +264,9 @@ public class VoiceSelector {
         // If still no voice from mappings/tags
         if (voice == null) {
             if ("ElevenLabs".equalsIgnoreCase(provider)) {
-                voice = "Rachel (21m00Tcm4TlvDq8ikWAM)"; // safe default id
+                // For ElevenLabs, return null to allow VoiceSelectionPipeline to handle advanced selection
+                // The pipeline has sophisticated logic for using the voice catalog and rotating selections
+                voice = null;
             } else {
                 String gender = guessGender(npcName);
                 int seed = Math.abs((npcName != null ? npcName : "").hashCode());
@@ -240,12 +278,72 @@ public class VoiceSelector {
             }
         }
 
+        // Record unmapped NPCs (only when no explicit mapping chosen before fallback logic; voice still null here for ElevenLabs path)
+        if (voice == null && npcName != null && !npcName.isBlank()) {
+            logUnmapped(npcName);
+        }
+
         if (voice == null || "auto".equalsIgnoreCase(voice)) {
             voice = autoDefaultVoice(npcName);
         }
 
-        String style = inferStyle(lineText);
+        String inferredStyle = inferStyle(lineText);
+        // Allow explicit style directive in mapping value: "Voice (id)|style=excited"
+        String style = inferredStyle;
+        if (voice != null && voice.contains("|style=")) {
+            String[] parts = voice.split("\\|style=", 2);
+            if (parts.length == 2) {
+                voice = parts[0].trim();
+                String explicit = parts[1].trim();
+                if (!explicit.isEmpty()) style = explicit;
+            }
+        }
         return VoiceSelection.of(voice, style);
+    }
+
+    private void maybeReload() {
+        // Only reload if developer flag enabled OR auto-reload property set
+        if (!Boolean.getBoolean("osrs.tts.devReload")) return;
+        long now = System.currentTimeMillis();
+        if (now - lastReloadTime < RELOAD_INTERVAL_MS) return;
+        // Rebuild maps
+        synchronized (this) {
+            if (now - lastReloadTime < RELOAD_INTERVAL_MS) return; // double-check
+            exactNpcMap.clear();
+            tagMap.clear();
+            regexNpcMap.clear();
+            loadMapping(initialMappingPath);
+            lastReloadTime = now;
+        }
+    }
+
+    private void logUnmapped(String npcName) {
+        String normalized = npcName.trim();
+        if (normalized.isEmpty() || UNMAPPED.contains(normalized)) return;
+        UNMAPPED.add(normalized);
+        try {
+            java.nio.file.Path dir = java.nio.file.Path.of("quest-voices");
+            if (!java.nio.file.Files.isDirectory(dir)) {
+                java.nio.file.Files.createDirectories(dir);
+            }
+            java.nio.file.Path file = dir.resolve("unmapped-npcs.txt");
+            String line = normalized + System.lineSeparator();
+            java.nio.file.Files.writeString(file, line, java.nio.charset.StandardCharsets.UTF_8,
+                    java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+        } catch (Exception ignored) { }
+    }
+
+    private String resolveProviderSpecific(String raw) {
+        if (raw == null) return null;
+        int idx = raw.indexOf(':');
+        if (idx > 0) {
+            String pref = raw.substring(0, idx).trim();
+            String rest = raw.substring(idx + 1).trim();
+            if (pref.equalsIgnoreCase(provider)) return rest;
+            // If provider prefix does not match, ignore this mapping
+            return null;
+        }
+        return raw;
     }
 
     // Simple gender guesser by name; biased to male if ambiguous
@@ -295,6 +393,26 @@ public class VoiceSelector {
         }
         // Random by default
         return pool[RNG.nextInt(pool.length)];
+    }
+    
+    /**
+     * Get the count of quest voice files loaded.
+     */
+    public int getQuestVoicesCount() {
+        // This would be implemented based on quest voice file loading
+        // For now, return a placeholder count
+        return exactNpcMap.size();
+    }
+    
+    /**
+     * Shutdown voice selector and release resources.
+     */
+    public void shutdown() {
+        // Clear maps and release resources
+        exactNpcMap.clear();
+        tagMap.clear();
+        regexNpcMap.clear();
+        UNMAPPED.clear();
     }
 
     private String inferStyle(String text) {

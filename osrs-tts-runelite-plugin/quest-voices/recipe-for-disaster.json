@@ -1,0 +1,18 @@
+{
+  "npcExact": {
+    "Gypsy Aris": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=prophetic",
+    "Culinaromancer": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=manic",
+    "Cook": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=flustered",
+    "Sir Amik Varze": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=chivalrous",
+    "Evil Dave": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=brooding",
+    "Skrach Uglogwee": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=ogre",
+    "Pirate Pete": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=pirate",
+    "Lumbridge Guide": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=didactic",
+    "Mountain Dwarf": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=stout",
+    "Goblin Cook": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=nasal"
+  },
+  "tags": {
+    "culinary": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=flustered",
+    "demon": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=demonic"
+  }
+}

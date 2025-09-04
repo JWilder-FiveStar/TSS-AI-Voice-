@@ -1,0 +1,14 @@
+{
+  "npcExact": {
+    "Rat Burgiss": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=weary",
+    "Surok Magis": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=scheming",
+    "King Roald": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=regal",
+    "Zaff": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=arcane",
+    "Anna Jones": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=curious",
+    "Mage of Zamorak": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=whispered"
+  },
+  "tags": {
+    "varrock": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=civic",
+    "mage": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=arcane"
+  }
+}

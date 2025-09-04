@@ -10,13 +10,9 @@ import net.runelite.api.events.GameStateChanged;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
-import net.runelite.client.plugins.PluginDescriptor;
 
 @Slf4j
-@PluginDescriptor(
-	name = "Example"
-)
-public class ExamplePlugin extends Plugin
+class ExamplePlugin extends Plugin
 {
 	@Inject
 	private Client client;

@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "Eadgar": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=hermit",
+    "Denulth": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=commanding",
+    "Burntmeat": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=confused",
+    "Troll Elder": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=booming",
+    "Troll Child": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)|style=playful"
+  },
+  "tags": {
+    "troll": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=booming",
+    "burthorpe": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=stern"
+  }
+}

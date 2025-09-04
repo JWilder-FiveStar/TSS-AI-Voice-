@@ -44,6 +44,7 @@ public class OsrsTtsConfig {
         setIfMissing("tts.voice.strategy", "intelligent");    // intelligent | single | npc-mapped
         setIfMissing("tts.voice.default", "auto");            // provider voice or "auto"
         setIfMissing("tts.voice.mappingFile", "osrs-voices.json");
+    setIfMissing("tts.selection.randomPerTag", "true");
 
         // Narrator mode for books/journals/scrolls
         setIfMissing("tts.narrator.enabled", "true");
@@ -222,6 +223,10 @@ public class OsrsTtsConfig {
         config.setProperty("tts.cache.dir", dir);
         saveQuietly();
     }
+
+    // Random per-tag initial selection
+    public boolean isRandomPerTag() { return config.getBoolean("tts.selection.randomPerTag", true); }
+    public void setRandomPerTag(boolean v) { config.setProperty("tts.selection.randomPerTag", v); saveQuietly(); }
 
     // Volume
     public int getVolumePercent() {

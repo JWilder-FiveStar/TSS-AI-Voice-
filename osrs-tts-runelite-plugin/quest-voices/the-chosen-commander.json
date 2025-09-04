@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "Zanik": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)|style=heroic",
+    "Ur-tag": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=gravelly",
+    "Sigmund": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=scheming",
+    "Captain Undak": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=steady",
+    "Dorgeshuun Guard": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=alert"
+  },
+  "tags": {
+    "dorgeshuun": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=measured",
+    "goblin": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=raspy"
+  }
+}

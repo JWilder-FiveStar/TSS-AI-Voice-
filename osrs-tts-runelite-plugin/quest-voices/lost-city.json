@@ -1,0 +1,12 @@
+{
+  "npcExact": {
+    "Warrior": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=curious",
+    "Wizard": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)|style=arcane",
+    "Archer": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=focused",
+    "Monk": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=calm",
+    "Shamus": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)|style=fae"
+  },
+  "tags": {
+    "lostcity": "ElevenLabs:Elli (MF3mGyEYCl7XYWbV9V6O)|style=ethereal"
+  }
+}

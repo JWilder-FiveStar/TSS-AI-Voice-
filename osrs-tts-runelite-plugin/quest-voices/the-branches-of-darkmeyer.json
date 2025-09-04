@@ -1,0 +1,16 @@
+{
+  "npcExact": {
+    "Vanstrom Klause": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=predatory",
+    "Safalaan": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=troubled",
+    "Veliaf Hurtz": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=grizzled",
+    "Vertida Sefalatis": "ElevenLabs:Fin (Xb7hH8MSUJpSbSDYk0k2)|style=calculating",
+    "Ivan Strom": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=hopeful",
+    "Vyrewatch": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient",
+    "Desmodus Lasiurus": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=feral"
+  },
+  "tags": {
+    "myreque": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=earnest",
+    "vampyre": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=ominous",
+    "darkmeyer": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=gothic"
+  }
+}

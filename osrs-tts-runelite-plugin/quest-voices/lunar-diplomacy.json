@@ -1,0 +1,14 @@
+{
+  "npcExact": {
+    "Oneiromancer": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=soothing",
+    "Lokar Searunner": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=seafarer",
+    "Baba Yaga": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=witch",
+    "Bird's Eye Jack": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=jaunty",
+    "Captain Bentley": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=steady",
+    "Cyrisus": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=anxious"
+  },
+  "tags": {
+    "lunar": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=ethereal",
+    "pirate": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=seadog"
+  }
+}

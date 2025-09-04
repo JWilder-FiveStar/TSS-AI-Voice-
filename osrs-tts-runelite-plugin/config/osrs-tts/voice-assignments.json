@@ -1,30 +1,162 @@
 {
-  "romeo" : {
-    "provider" : "ElevenLabs",
-    "voiceId" : "Adam (pNInz6obpgDQGcFmaJgB)",
-    "voiceLabel" : "Adam (pNInz6obpgDQGcFmaJgB)",
-    "assignedAtEpochMs" : 1756830393142,
-    "assignedBy" : "auto"
-  },
   "aris" : {
     "provider" : "ElevenLabs",
     "voiceId" : "Adam (pNInz6obpgDQGcFmaJgB)",
     "voiceLabel" : "Adam (pNInz6obpgDQGcFmaJgB)",
     "assignedAtEpochMs" : 1756830414763,
-    "assignedBy" : "auto"
+    "assignedBy" : "auto",
+    "primaryTag" : null
   },
-  "zaff" : {
-    "provider" : "ElevenLabs",
-    "voiceId" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
-    "voiceLabel" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
-    "assignedAtEpochMs" : 1756830576768,
-    "assignedBy" : "auto"
-  },
-  "master smithing tutor" : {
+  "town crier" : {
     "provider" : "ElevenLabs",
     "voiceId" : "Adam (pNInz6obpgDQGcFmaJgB)",
     "voiceLabel" : "Adam (pNInz6obpgDQGcFmaJgB)",
-    "assignedAtEpochMs" : 1756830617582,
-    "assignedBy" : "auto"
+    "assignedAtEpochMs" : 1756840437440,
+    "assignedBy" : "auto",
+    "primaryTag" : null
+  },
+  "aubury" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "voiceLabel" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "assignedAtEpochMs" : 1756852156206,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "man" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "voiceLabel" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "assignedAtEpochMs" : 1756852175986,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "tramp" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "voiceLabel" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "assignedAtEpochMs" : 1756852211408,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "brugsen bursen" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "voiceLabel" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "assignedAtEpochMs" : 1756856195301,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "baraek" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "voiceLabel" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "assignedAtEpochMs" : 1756856391628,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "eliza" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "voiceLabel" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "assignedAtEpochMs" : 1756856423439,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "banker" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "voiceLabel" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "assignedAtEpochMs" : 1756856473832,
+    "assignedBy" : "auto",
+    "primaryTag" : "banker"
+  },
+  "dr fenkenstrain" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Antoni (ErXwobaYiN019PkySvjV)",
+    "voiceLabel" : "Antoni (ErXwobaYiN019PkySvjV)",
+    "assignedAtEpochMs" : 1756932823068,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "gardener ghost" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "voiceLabel" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "assignedAtEpochMs" : 1756939525336,
+    "assignedBy" : "auto",
+    "primaryTag" : "ghost"
+  },
+  "fenkenstrains monster" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Arnold (VR6AewLTigWG4xSOukaG)",
+    "voiceLabel" : "Arnold (VR6AewLTigWG4xSOukaG)",
+    "assignedAtEpochMs" : 1756940546635,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "queen ellamaria" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "voiceLabel" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "assignedAtEpochMs" : 1756941023086,
+    "assignedBy" : "auto",
+    "primaryTag" : "royalty"
+  },
+  "grand exchange clerk" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "voiceLabel" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "assignedAtEpochMs" : 1756942246966,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "candle maker" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "voiceLabel" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "assignedAtEpochMs" : 1756954988553,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "the  wedge" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "voiceLabel" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "assignedAtEpochMs" : 1756955166776,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "sir kay" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Josh (TxGEqnHWrfWFTfGW9XjX)",
+    "voiceLabel" : "Josh (TxGEqnHWrfWFTfGW9XjX)",
+    "assignedAtEpochMs" : 1756955429325,
+    "assignedBy" : "auto",
+    "primaryTag" : "nobility"
+  },
+  "seer" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "voiceLabel" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "assignedAtEpochMs" : 1756955864232,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "guard" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Sam (yoZ06aMxZJJ28mfd3POQ)",
+    "voiceLabel" : "Sam (yoZ06aMxZJJ28mfd3POQ)",
+    "assignedAtEpochMs" : 1756955894241,
+    "assignedBy" : "auto",
+    "primaryTag" : "guard"
+  },
+  "sandwich lady" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "voiceLabel" : "Rachel (21m00Tcm4TlvDq8ikWAM)",
+    "assignedAtEpochMs" : 1756956199771,
+    "assignedBy" : "auto",
+    "primaryTag" : "nobility"
   }
 }

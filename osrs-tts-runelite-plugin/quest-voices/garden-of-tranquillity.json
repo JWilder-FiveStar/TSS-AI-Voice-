@@ -1,0 +1,15 @@
+{
+  "npcExact": {
+    "Queen Ellamaria": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=imperious",
+    "King Roald": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=regal",
+    "Father Lawrence": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=gentle",
+    "Elstan": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=botanical",
+    "Ronas": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=helpful",
+    "Dantaera": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=floral",
+    "Lyra": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)|style=airy"
+  },
+  "tags": {
+    "varrock": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=civic",
+    "garden": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=floral"
+  }
+}

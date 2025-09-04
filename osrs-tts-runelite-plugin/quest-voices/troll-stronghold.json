@@ -1,0 +1,14 @@
+{
+  "npcExact": {
+    "Denulth": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=commanding",
+    "Commander Denulth": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=commanding",
+    "Eadgar": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=hermit",
+    "Troll Guard": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=gruff",
+    "Tenzing": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=pragmatic",
+    "Godric": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=brash"
+  },
+  "tags": {
+    "troll": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=booming",
+    "burthorpe": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=stern"
+  }
+}

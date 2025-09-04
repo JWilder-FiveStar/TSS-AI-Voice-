@@ -1,0 +1,17 @@
+{
+  "npcExact": {
+    "Fairy Godfather": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=menacing",
+    "Fairy Queen": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=restored",
+    "Fairy Nuff": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=concerned",
+    "Fairy Harris": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=curious",
+    "Tanglefoot": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=rumbling"
+  },
+  "npcRegex": {
+    "(?i)tanglefoot": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=rumbling",
+    "(?i)fairy harris": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=curious"
+  },
+  "tags": {
+    "fairy": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=airy",
+    "corrupt-fairy": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=menacing"
+  }
+}

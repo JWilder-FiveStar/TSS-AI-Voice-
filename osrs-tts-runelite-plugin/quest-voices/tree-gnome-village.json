@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "King Bolren": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)|style=fae",
+    "Commander Montai": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=urgent",
+    "Tracker gnome 1": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)|style=soft",
+    "Tracker gnome 2": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)|style=soft",
+    "Tracker gnome 3": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)|style=soft",
+    "Khazard Warlord": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=command"
+  },
+  "tags": {
+    "treegnomevillage": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)|style=fae"
+  }
+}

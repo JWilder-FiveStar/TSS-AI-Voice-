@@ -1,0 +1,16 @@
+{
+  "npcExact": {
+    "Reldo": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=studious",
+    "Captain Rovin": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=authoritative",
+    "Sir Prysin": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=proper",
+    "Dimintheis": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=patriarch",
+    "Hartwin": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=earnest",
+    "Arrav": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=heroic",
+    "Dark Mage": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=whispered"
+  },
+  "tags": {
+    "varrock": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=civic",
+    "hero": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=heroic",
+    "mage": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=arcane"
+  }
+}

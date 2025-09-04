@@ -1,0 +1,15 @@
+{
+  "npcExact": {
+    "King Arthur": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=regal",
+    "Merlin": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=wise",
+    "Sir Gawain": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=chivalrous",
+    "Sir Lancelot": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=valiant",
+    "Sir Mordred": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=defiant",
+    "Evil Knight": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=menacing",
+    "Guard": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=alert"
+  },
+  "tags": {
+    "camelot": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=regal",
+    "knight": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=valiant"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "npcExact": {
+    "Achietties": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=refined",
+    "Helemos": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=gruff",
+    "Grip": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=suspicious",
+    "Scarface Pete": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=pirate",
+    "Guild Master": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=mentor",
+    "Candlestick Maker": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=fussy",
+    "Fire Warrior of Lesarkus": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=fiery"
+  },
+  "tags": {
+    "hero": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=heroic",
+    "pirate": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=seadog"
+  }
+}

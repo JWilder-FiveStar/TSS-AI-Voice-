@@ -1,0 +1,14 @@
+{
+  "npcExact": {
+    "Oziach": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=gruff",
+    "Duke Horacio": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=regal",
+    "Guild Master": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=mentor",
+    "Ned": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=cheerful",
+    "Clarence": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=proper",
+    "Wormbrain": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=squeaky",
+    "Elvarg": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=draconic"
+  },
+  "tags": {
+    "dragon": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=draconic"
+  }
+}

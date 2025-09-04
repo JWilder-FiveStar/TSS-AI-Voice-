@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "Oneiromancer": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=soothing",
+    "Cyrisus": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=steadfast",
+    "Koschei the deathless": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient",
+    "Bird's Eye Jack": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=jaunty",
+    "Baba Yaga": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=witch"
+  },
+  "tags": {
+    "lunar": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=ethereal",
+    "pirate": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=seadog"
+  }
+}

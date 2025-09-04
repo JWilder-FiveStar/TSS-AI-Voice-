@@ -5,133 +5,102 @@ import net.runelite.client.config.*;
 @ConfigGroup("osrs-tts")
 public interface OsrsTtsRlConfig extends Config {
 
+    // --- Provider Selection ---
+    enum Provider { Azure, ElevenLabs, Polly }
+
     @ConfigItem(
-            keyName = "enabled",
-            name = "Enable TTS",
-            description = "Enable text-to-speech for NPCs and narration"
+	    keyName = "provider",
+	    name = "Provider",
+	    description = "TTS provider to use (Azure / ElevenLabs / Polly)",
+	    position = 0
+    )
+    default Provider provider() { return Provider.ElevenLabs; }
+
+    // Master enable
+    @ConfigItem(
+	    keyName = "enabled",
+	    name = "Enable TTS",
+	    description = "Master enable/disable for TTS playback",
+	    position = 1
     )
     default boolean enabled() { return true; }
 
-    @ConfigItem(
-            keyName = "provider",
-            name = "TTS Provider",
-            description = "Choose your TTS service provider"
-    )
-    default Provider provider() { return Provider.Azure; }
-
-    enum Provider {
-        Azure,
-        Polly,
-        ElevenLabs
-    }
-
-    @ConfigSection(
-            name = "Azure Speech Settings",
-            description = "Azure Cognitive Services configuration",
-            position = 1
-    )
-    String azureSection = "azure";
-
-    @ConfigItem(
-            keyName = "azureKey",
-            name = "Azure Speech Key",
-            description = "Your Azure Cognitive Services Speech key (saved locally)",
-            section = azureSection,
-            secret = true
-    )
-    default String azureKey() { return ""; }
-
-    @ConfigItem(
-            keyName = "azureRegion",
-            name = "Azure Region (custom)",
-            description = "Custom Azure region text if needed (e.g., eastus, westus2)",
-            section = azureSection,
-            position = 1
-    )
-    default String azureRegion() { return "eastus"; }
-
+    // --- Azure ---
     enum AzureRegion {
-        eastus, eastus2, southcentralus, westus, westus2, westus3,
-        centralus, northcentralus,
-        canadacentral, brazilsouth,
-        northeurope, westeurope, uksouth,
-        francecentral, germanywestcentral, switzerlandnorth, norwayeast,
-        eastasia, southeastasia, japaneast, koreacentral,
-        australiaeast, australiasoutheast,
-        uaenorth, southafricanorth
+	eastus, eastus2, southcentralus, westus, westus2, westus3,
+	centralus, northcentralus, canadacentral, brazilsouth,
+	northeurope, westeurope, uksouth, francecentral,
+	germanywestcentral, switzerlandnorth, norwayeast,
+	eastasia, southeastasia, japaneast, koreacentral,
+	australiaeast, australiasoutheast, uaenorth, southafricanorth
     }
 
     @ConfigItem(
-            keyName = "azureRegionSelect",
-            name = "Azure Region",
-            description = "Select an Azure region",
-            section = azureSection,
-            position = 0
+	    keyName = "azureRegionSelect",
+	    name = "Azure Region (Dropdown)",
+	    description = "Preferred Azure Speech region (dropdown)",
+	    position = 10
     )
     default AzureRegion azureRegionSelect() { return AzureRegion.eastus; }
 
     @ConfigItem(
-            keyName = "testVoice",
-            name = "Test Voice",
-            description = "Click to test TTS with current settings (requires provider key)",
-            section = azureSection
+	    keyName = "azureRegion",
+	    name = "Azure Region (Custom)",
+	    description = "Optional custom Azure region override (takes precedence if not blank)",
+	    position = 11
     )
-    default boolean testVoice() {
-        return false;
-    }
-
-    @ConfigSection(
-            name = "ElevenLabs Settings",
-            description = "ElevenLabs text-to-speech configuration",
-            position = 2
-    )
-    String elevenSection = "eleven";
+    default String azureRegion() { return ""; }
 
     @ConfigItem(
-            keyName = "elevenKey",
-            name = "ElevenLabs API Key",
-            description = "Your ElevenLabs API key (saved locally)",
-            section = elevenSection,
-            secret = true
+	    keyName = "azureKey",
+	    name = "Azure Speech Key",
+	    description = "Your Azure Cognitive Services Speech key",
+	    secret = true,
+	    position = 12
+    )
+    default String azureKey() { return ""; }
+
+    // --- ElevenLabs ---
+    @ConfigItem(
+	    keyName = "elevenKey",
+	    name = "ElevenLabs API Key",
+	    description = "Your ElevenLabs API key",
+	    secret = true,
+	    position = 20
     )
     default String elevenKey() { return ""; }
 
     @ConfigItem(
-            keyName = "elevenModel",
-            name = "ElevenLabs Model",
-            description = "Model id (e.g., eleven_turbo_v2_5)",
-            section = elevenSection
+	    keyName = "elevenModel",
+	    name = "ElevenLabs Model",
+	    description = "Model id (e.g. eleven_turbo_v2_5)",
+	    position = 21
     )
     default String elevenModel() { return "eleven_turbo_v2_5"; }
 
-    @ConfigSection(
-            name = "Voice Settings",
-            description = "Voice and narration options",
-            position = 3
-    )
-    String voiceSection = "voice";
-
+    // Narrator
     @ConfigItem(
-            keyName = "narratorEnabled",
-            name = "Narrator for books/journals",
-            description = "Enable narration for long texts like books and journals",
-            section = voiceSection
+	    keyName = "narratorEnabled",
+	    name = "Narrator Enabled",
+	    description = "Narrate long-form texts like books, journals, scrolls",
+	    position = 30
     )
     default boolean narratorEnabled() { return true; }
 
     @ConfigItem(
-            keyName = "narratorVoice",
-            name = "Narrator Voice",
-            description = "Voice to use for narration (Azure short name or ElevenLabs 'Name (id)')",
-            section = voiceSection
+	    keyName = "narratorVoice",
+	    name = "Narrator Voice",
+	    description = "Voice used for narration (Azure short name or ElevenLabs 'Name (id)')",
+	    position = 31
     )
     default String narratorVoice() { return "en-US-JennyNeural"; }
 
+    // Player voice
     @ConfigItem(
-            keyName = "playerVoice",
-            name = "Player Voice",
-            description = "Voice to use for your own character (Azure short name or ElevenLabs 'Name (id)')",
-            section = voiceSection
+	    keyName = "playerVoice",
+	    name = "Player Voice",
+	    description = "Voice used for your player character",
+	    position = 40
     )
     default String playerVoice() { return "en-US-DavisNeural"; }
 }

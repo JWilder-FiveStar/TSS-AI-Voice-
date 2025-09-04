@@ -1,0 +1,12 @@
+{
+  "npcExact": {
+    "Arianwyn": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=strategic",
+    "Eluned": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=melodic",
+    "Islwyn": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient",
+    "Thorgel": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=curious"
+  },
+  "tags": {
+    "elf": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=elven",
+    "tirannwn": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient"
+  }
+}

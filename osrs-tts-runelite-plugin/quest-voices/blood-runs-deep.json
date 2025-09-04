@@ -1,0 +1,18 @@
+{
+  "npcExact": {
+    "Baba Yaga": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=witch",
+    "Brundt the Chieftain": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=hearty",
+    "Fremennik warrior": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=stout",
+    "Thora the Barkeep": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=warm",
+    "Manni the Reveller": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=boisterous",
+    "Brynjolf": "ElevenLabs:Chris (iP95p4xoKVk53GoZ742B)|style=grizzled",
+    "Koschei": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient",
+    "Rellekka Citizen": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=stoic",
+    "Fjorne": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=commanding",
+    "Thorkel": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=steady"
+  },
+  "tags": {
+    "fremennik": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=tribal",
+    "witch": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=witchy"
+  }
+}

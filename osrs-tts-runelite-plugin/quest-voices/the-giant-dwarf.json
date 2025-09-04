@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "Veldaban": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=stout",
+    "Santiri": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=proud",
+    "Blasidar the sculptor": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=craftsman",
+    "Saro": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=merchant",
+    "Vigr": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=hearty",
+    "Dromund": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=aged"
+  },
+  "tags": {
+    "dwarf": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=stout"
+  }
+}

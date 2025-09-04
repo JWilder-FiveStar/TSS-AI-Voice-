@@ -2,7 +2,6 @@ package com.example.osrstts.dialog;
 
 import com.example.osrstts.voice.VoiceRuntime;
 import net.runelite.api.events.ChatMessage;
-import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 
@@ -33,10 +32,6 @@ public class DialogListener {
         } catch (Exception ignored) {}
     }
 
-    @Subscribe
-    public void onGameTick(GameTick gameTick) {
-        // Placeholder for periodic checks, e.g., scanning open widgets for book/journal text
-    }
 
     private String stripTags(String in) {
         return in == null ? "" : in.replaceAll("<[^>]*>", "");

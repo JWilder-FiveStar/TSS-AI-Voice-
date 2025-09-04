@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "My Arm": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=enthusiastic",
+    "Burntmeat": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=confused",
+    "Chef": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=proper",
+    "Snowflake": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=cheerful",
+    "Patchy": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=pirate"
+  },
+  "tags": {
+    "troll": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=booming",
+    "humorous": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=comedic"
+  }
+}

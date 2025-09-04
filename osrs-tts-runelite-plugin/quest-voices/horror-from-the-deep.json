@@ -1,0 +1,16 @@
+{
+  "npcExact": {
+    "Jossik": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=earnest",
+    "Dagannoth Mother": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=multi",
+    "Larrissa": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=worried",
+    "Father Reen": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=firm",
+    "Father Badden": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=concerned"
+  },
+  "npcRegex": {
+    "(?i)dagannoth mother": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=multi"
+  },
+  "tags": {
+    "dagannoth": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=rumbling",
+    "cleric": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=solemn"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "npcExact": {
+    "Alec Kincade": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=official",
+    "Bob": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=friendly",
+    "Elvarg": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=draconic",
+    "Rear Admiral Braindeath": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=boozy",
+    "Captain Ned": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=seasoned",
+    "Stuffed diplomat": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=muffled",
+    "Revenant dragon": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=ethereal"
+  },
+  "tags": {
+    "dragon": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=draconic",
+    "naval": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=seafarer"
+  }
+}

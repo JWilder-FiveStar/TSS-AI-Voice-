@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "Ug": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=gentle",
+    "Aga": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=soft",
+    "Arrg": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=roaring",
+    "Tenzing": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=pragmatic",
+    "Dunstan": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=craftsman"
+  },
+  "tags": {
+    "troll": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=booming",
+    "romance": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=gentle"
+  }
+}

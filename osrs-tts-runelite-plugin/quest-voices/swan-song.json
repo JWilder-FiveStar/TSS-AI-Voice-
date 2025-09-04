@@ -1,0 +1,14 @@
+{
+  "npcExact": {
+    "Master Fisher": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=patient",
+    "Franklin Caranos": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=scholarly",
+    "Jeb": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=earnest",
+    "Smith": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=stoic",
+    "Frank": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=practical",
+    "Banker": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=brisk"
+  },
+  "tags": {
+    "pelagic": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=seafarer",
+    "colony": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=scholarly"
+  }
+}

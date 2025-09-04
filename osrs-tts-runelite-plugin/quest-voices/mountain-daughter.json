@@ -1,0 +1,18 @@
+{
+  "npcExact": {
+    "Hamund": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=tribal",
+    "Svidi": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=wary",
+    "Brine Rat": "ElevenLabs:Dave (CYw3kZ02Hs0563khs1Fj)|style=guttural",
+    "The Kendal": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=beastial",
+    "Koftik": "ElevenLabs:Fin (Xb7hH8MSUJpSbSDYk0k2)|style=mournful",
+    "Ragnar": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancestral",
+    "Bolverk": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=measured",
+    "Agmundi": "ElevenLabs:Chris (iP95p4xoKVk53GoZ742B)|style=stoic",
+    "Skadi": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=soft",
+    "Asleif": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)|style=spirit"
+  },
+  "tags": {
+    "fremennik": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=tribal",
+    "spirit": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=ethereal"
+  }
+}

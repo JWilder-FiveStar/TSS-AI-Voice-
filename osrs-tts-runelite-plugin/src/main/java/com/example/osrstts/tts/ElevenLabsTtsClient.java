@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import com.example.osrstts.OsrsTtsConfig;
 
 public class ElevenLabsTtsClient implements TtsClient {
     private final String apiKey;
@@ -155,4 +156,9 @@ public class ElevenLabsTtsClient implements TtsClient {
         if (ID_PATTERN.matcher(s).matches()) return s;
         return null;
     }
+
+    @Override public boolean isConfigured(OsrsTtsConfig config) { return apiKey != null && !apiKey.isBlank(); }
+    @Override public boolean testConnection(OsrsTtsConfig config) { try { listVoicesSample(); return true; } catch (Exception e) { return false; } }
+    @Override public String getProviderName() { return "ElevenLabs"; }
+    @Override public void shutdown() { }
 }

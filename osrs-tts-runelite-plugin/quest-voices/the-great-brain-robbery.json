@@ -1,0 +1,15 @@
+{
+  "npcExact": {
+    "Pirate Pete": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=jaunty",
+    "Brother Tranquility": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=calm",
+    "Zombie Pirate": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=raspy",
+    "Patchy": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=raucous",
+    "Mi-Gor": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=mad",
+    "Sorebones": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=deadpan"
+  },
+  "tags": {
+    "pirate": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=seadog",
+    "zombie": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=rotting",
+    "mosleharmless": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=calm"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "npcExact": {
+    "Safalaan": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=resolved",
+    "Veliaf Hurtz": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=worn",
+    "Ivan Strom": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=brave",
+    "Vertida Sefalatis": "ElevenLabs:Fin (Xb7hH8MSUJpSbSDYk0k2)|style=calculating",
+    "Ranis Drakan": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=cruel",
+    "Vanstrom Klause": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=predatory",
+    "Lord Drakan": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient"
+  },
+  "tags": {
+    "myreque": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=earnest",
+    "vampyre": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=ominous",
+    "darkmeyer": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=gothic"
+  }
+}

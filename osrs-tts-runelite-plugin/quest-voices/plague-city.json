@@ -1,0 +1,12 @@
+{
+  "npcExact": {
+    "Edmond": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=determined",
+    "Elena": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=gentle",
+    "Jethick": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=helpful",
+    "Bravek": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=hoarse",
+    "Clerk": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)|style=bureaucratic"
+  },
+  "tags": {
+    "plaguecity": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)|style=serious"
+  }
+}

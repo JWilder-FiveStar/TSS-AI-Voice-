@@ -1,0 +1,17 @@
+{
+  "npcExact": {
+    "Fairy Godfather": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=scheming",
+    "Fairy Queen": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=weakened",
+    "Lord Iorwerth": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=cold",
+    "Fairy Nuff": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=earnest",
+    "Fairy Chef": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=chirpy"
+  },
+  "npcRegex": {
+    "(?i)fairy nuff": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=earnest",
+    "(?i)godfather": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=scheming"
+  },
+  "tags": {
+    "dark-fairy": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=scheming",
+    "fairy": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=airy"
+  }
+}

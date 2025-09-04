@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "Azzanadra": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient",
+    "Sir Tiffy Cashien": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=proper",
+    "Sir Owen": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=chivalrous",
+    "Guardian Mummy": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=entombed",
+    "Eblis": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=arcane"
+  },
+  "tags": {
+    "mahjarrat": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient",
+    "desert": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=measured"
+  }
+}

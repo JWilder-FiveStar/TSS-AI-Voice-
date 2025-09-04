@@ -1,0 +1,16 @@
+{
+  "npcExact": {
+    "Akkha": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=commanding",
+    "Duke Sucellus": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=gravelly",
+    "The Whisperer": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=echoing",
+    "Vardorvis": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=brutal",
+    "Perseriya": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=ancient",
+    "Azzanadra": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient",
+    "Eblis": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=arcane"
+  },
+  "tags": {
+    "mahjarrat": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient",
+    "ancient": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=whispered",
+    "desert": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=measured"
+  }
+}

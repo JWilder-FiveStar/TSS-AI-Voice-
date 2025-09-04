@@ -1,0 +1,17 @@
+{
+  "npcExact": {
+    "Safalaan": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=focused",
+    "Veliaf Hurtz": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=tactical",
+    "Garth": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=pragmatic",
+    "Kael Forshaw": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=blunt",
+    "Ivan Strom": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=steadfast",
+    "Ranis Drakan": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=cruel",
+    "Vanstrom Klause": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=predatory",
+    "Mysterious Stranger": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=whispered"
+  },
+  "tags": {
+    "myreque": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=earnest",
+    "vampyre": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=ominous",
+    "morytania": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=brooding"
+  }
+}

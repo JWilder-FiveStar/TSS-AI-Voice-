@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "Rasolo": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=mysterious",
+    "Eblis": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)|style=arcane",
+    "Fareed": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=fiery",
+    "Dessous": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=sinister",
+    "Kamil": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=icy",
+    "Damis": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=menacing"
+  },
+  "tags": {
+    "deserttreasure": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)|style=ancient"
+  }
+}

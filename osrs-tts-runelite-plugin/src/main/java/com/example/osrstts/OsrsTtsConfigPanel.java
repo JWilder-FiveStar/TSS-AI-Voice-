@@ -8,6 +8,7 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -56,6 +57,8 @@ public class OsrsTtsConfigPanel extends PluginPanel {
 
     private javax.swing.Timer debounceTimer;
     private JSlider volumeSlider;
+    private JCheckBox randomPerTagCheckbox;
+    private JLabel assignmentsStatsLabel;
 
     private static final List<String> AZURE_REGIONS = Arrays.asList(
             "eastus", "eastus2", "southcentralus", "westus", "westus2", "westus3",
@@ -114,13 +117,13 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(volumeSlider, gbc);
 
         // Azure section header
-    gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
+    gbc.gridx = 0; gbc.gridy = 10; gbc.gridwidth = 2;
         azureHeaderLabel = new JLabel("Azure Speech Settings");
         azureHeaderLabel.setFont(azureHeaderLabel.getFont().deriveFont(Font.BOLD));
         add(azureHeaderLabel, gbc);
 
         // Azure Key with show/hide toggle
-    gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 11; gbc.gridwidth = 1;
         azureKeyLabel = new JLabel("Azure Speech Key:");
         add(azureKeyLabel, gbc);
         gbc.gridx = 1;
@@ -142,7 +145,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(azureKeyRow, gbc);
 
         // Azure Region (dropdown)
-    gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 12; gbc.gridwidth = 1;
         azureRegionLabel = new JLabel("Azure Region:");
         add(azureRegionLabel, gbc);
         gbc.gridx = 1;
@@ -157,18 +160,64 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(azureRegionCombo, gbc);
 
         // Voice status label (right aligned)
-    gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 2;
+    gbc.gridx = 0; gbc.gridy = 13; gbc.gridwidth = 2;
         voicesStatusLabel.setHorizontalAlignment(SwingConstants.RIGHT);
         add(voicesStatusLabel, gbc);
 
+    // Random per-tag toggle
+    gbc.gridx = 0; gbc.gridy = 14; gbc.gridwidth = 2;
+    randomPerTagCheckbox = new JCheckBox("Randomize first voice per lore tag", plugin != null && plugin.config != null && plugin.config.isRandomPerTag());
+    add(randomPerTagCheckbox, gbc);
+
+    // Assignment stats placeholder
+    gbc.gridx = 0; gbc.gridy = 15; gbc.gridwidth = 2;
+    assignmentsStatsLabel = new JLabel("Assignments: 0 voices");
+    add(assignmentsStatsLabel, gbc);
+
+    // Quest voice mapping status
+    gbc.gridx = 0; gbc.gridy = 16; gbc.gridwidth = 2;
+    JLabel questStatusLabel = new JLabel();
+    updateQuestMappingStatus(questStatusLabel);
+    add(questStatusLabel, gbc);
+
+    // Quick clear controls (developer convenience)
+    gbc.gridx = 0; gbc.gridy = 17; gbc.gridwidth = 2;
+    JPanel clearRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+    JButton clearFenken = new JButton("Clear Fenkenstrain");
+    JButton clearAllAssign = new JButton("Clear All Assignments");
+    clearFenken.setToolTipText("Remove stored voice for Dr Fenkenstrain so new mapping applies");
+    clearAllAssign.setToolTipText("Remove ALL persisted NPC voice assignments");
+    clearFenken.addActionListener(e -> {
+        try {
+            if (plugin != null && plugin.voiceRuntime != null) {
+                var store = plugin.voiceRuntime.getAssignmentStore();
+                store.remove("dr fenkenstrain");
+                store.remove("fenkenstrain");
+                refreshAssignmentStats();
+                JOptionPane.showMessageDialog(this, "Cleared Fenkenstrain assignments.", "Cleared", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (Exception ex) { JOptionPane.showMessageDialog(this, "Failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); }
+    });
+    clearAllAssign.addActionListener(e -> {
+        if (plugin != null && plugin.voiceRuntime != null) {
+            int confirm = JOptionPane.showConfirmDialog(this, "Really clear ALL NPC assignments?", "Confirm", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (confirm == JOptionPane.OK_OPTION) {
+                plugin.voiceRuntime.getAssignmentStore().all().keySet().forEach(k -> plugin.voiceRuntime.getAssignmentStore().remove(k));
+                refreshAssignmentStats();
+            }
+        }
+    });
+    clearRow.add(clearFenken); clearRow.add(clearAllAssign);
+    add(clearRow, gbc);
+
         // ElevenLabs section header
-    gbc.gridx = 0; gbc.gridy = 7; gbc.gridwidth = 2;
+    gbc.gridx = 0; gbc.gridy = 18; gbc.gridwidth = 2;
         elevenHeaderLabel = new JLabel("ElevenLabs Settings");
         elevenHeaderLabel.setFont(elevenHeaderLabel.getFont().deriveFont(Font.BOLD));
         add(elevenHeaderLabel, gbc);
 
         // ElevenLabs API Key with show/hide
-    gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 19; gbc.gridwidth = 1;
         elevenKeyLabel = new JLabel("ElevenLabs API Key:");
         add(elevenKeyLabel, gbc);
         gbc.gridx = 1;
@@ -190,7 +239,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(elevenKeyRow, gbc);
 
         // ElevenLabs Model
-    gbc.gridx = 0; gbc.gridy = 9; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 20; gbc.gridwidth = 1;
         elevenModelLabel = new JLabel("ElevenLabs Model:");
         add(elevenModelLabel, gbc);
         gbc.gridx = 1;
@@ -198,7 +247,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(elevenModelField, gbc);
 
         // Test buttons
-    gbc.gridx = 0; gbc.gridy = 10; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 21; gbc.gridwidth = 1;
         JButton testButton = new JButton("🔊 Test Voice");
         add(testButton, gbc);
         testButton.addActionListener(new ActionListener() {
@@ -208,7 +257,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
                 plugin.testVoice();
             }
         });
-    gbc.gridx = 1; gbc.gridy = 10; gbc.gridwidth = 1;
+    gbc.gridx = 1; gbc.gridy = 21; gbc.gridwidth = 1;
         JButton testPlayerButton = new JButton("🔊 Test Player Voice");
         add(testPlayerButton, gbc);
         testPlayerButton.addActionListener(new ActionListener() {
@@ -219,19 +268,19 @@ public class OsrsTtsConfigPanel extends PluginPanel {
             }
         });
 
-        // Voice Settings section header
-    gbc.gridx = 0; gbc.gridy = 11; gbc.gridwidth = 2;
+        // Voice Settings section header (placed after test buttons -> next free row is 22)
+    gbc.gridx = 0; gbc.gridy = 22; gbc.gridwidth = 2;
         JLabel voiceHeader = new JLabel("Voice Settings");
         voiceHeader.setFont(voiceHeader.getFont().deriveFont(Font.BOLD));
         add(voiceHeader, gbc);
 
         // Narrator enabled
-    gbc.gridx = 0; gbc.gridy = 12; gbc.gridwidth = 2;
+    gbc.gridx = 0; gbc.gridy = 23; gbc.gridwidth = 2;
         narratorEnabledCheckbox = new JCheckBox("Narrator for books/journals", config.narratorEnabled());
         add(narratorEnabledCheckbox, gbc);
 
         // Narrator Voice picker (pop-out)
-    gbc.gridx = 0; gbc.gridy = 13; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 24; gbc.gridwidth = 1;
         add(new JLabel("Narrator Voice:"), gbc);
         gbc.gridx = 1; gbc.gridwidth = 1;
         JPanel narrRow = new JPanel(new BorderLayout(5, 0));
@@ -244,7 +293,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(narrRow, gbc);
 
         // Player Voice picker (pop-out)
-    gbc.gridx = 0; gbc.gridy = 14; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 25; gbc.gridwidth = 1;
         add(new JLabel("Player Voice:"), gbc);
         gbc.gridx = 1; gbc.gridwidth = 1;
         JPanel playerRow = new JPanel(new BorderLayout(5, 0));
@@ -258,7 +307,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(playerRow, gbc);
 
         // Save Button
-    gbc.gridx = 0; gbc.gridy = 15; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 26; gbc.gridwidth = 1;
         JButton saveButton = new JButton("💾 Save Settings");
         add(saveButton, gbc);
         saveButton.addActionListener(new ActionListener() {
@@ -271,13 +320,13 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         });
 
         // Lore Voice Selector
-        gbc.gridx = 1; gbc.gridy = 15; gbc.gridwidth = 1;
+    gbc.gridx = 1; gbc.gridy = 26; gbc.gridwidth = 1;
         JButton loreSelectorBtn = new JButton("📜 Lore Voice Selector…");
         add(loreSelectorBtn, gbc);
         loreSelectorBtn.addActionListener(e -> openLoreSelectorDialog());
 
         // Advanced settings launcher
-        gbc.gridx = 0; gbc.gridy = 16; gbc.gridwidth = 2;
+    gbc.gridx = 0; gbc.gridy = 27; gbc.gridwidth = 2;
         JButton advancedBtn = new JButton("⚙️ Advanced Settings…");
         add(advancedBtn, gbc);
         advancedBtn.addActionListener(e -> {
@@ -285,7 +334,16 @@ public class OsrsTtsConfigPanel extends PluginPanel {
             new com.example.osrstts.ui.AdvancedSettingsDialog(owner, plugin, config, configManager).setVisible(true);
         });
 
-        // Wire provider change to update UI and save immediately
+        // Force narration scan button (helps when user feels narrator missed content)
+        gbc.gridx = 0; gbc.gridy = 28; gbc.gridwidth = 2;
+            JButton forceNarrBtn = new JButton("🔄 Force Narration Scan");
+            forceNarrBtn.setToolTipText("Immediately rescan UI widgets for book / parchment text (no throttling)");
+            add(forceNarrBtn, gbc);
+            forceNarrBtn.addActionListener(e -> {
+                if (plugin != null) plugin.forceNarrationScanNow();
+            });
+
+    // Wire provider change to update UI and save immediately
         providerCombo.addActionListener(e -> onProviderChanged());
         // React to key/region/model changes to auto-load voices (debounced)
         azureKeyField.getDocument().addDocumentListener(reloadOnChange());
@@ -293,9 +351,18 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         elevenModelField.getDocument().addDocumentListener(reloadOnChange());
         azureRegionCombo.addItemListener(e -> { if (e.getStateChange() == ItemEvent.SELECTED) scheduleAutoLoad(); });
 
-        // Apply initial provider UI and trigger initial load
+        // Apply initial provider UI and trigger initial load (deferred to avoid EDT blocking)
         onProviderChanged();
-        scheduleAutoLoad();
+        // Defer voice loading to avoid blocking panel construction
+        SwingUtilities.invokeLater(() -> scheduleAutoLoad());
+        refreshAssignmentStats();
+    }
+
+    // Minimal stub – advanced quest mapping UI removed during simplification
+    private void updateQuestMappingStatus(JLabel label) {
+        if (label != null) {
+            label.setText("Quest voice mappings: (simplified)");
+        }
     }
 
     private void openVoiceMenu(JButton anchor, boolean narrator) {
@@ -473,6 +540,12 @@ public class OsrsTtsConfigPanel extends PluginPanel {
                     }
                 }
                 names = names.stream().distinct().sorted(String.CASE_INSENSITIVE_ORDER).collect(Collectors.toList());
+                // If the account only exposes a couple voices, augment with a curated public set so user has variety
+                if (names.size() < 5) {
+                    List<String> fallbackAug = defaultElevenVoices();
+                    for (String f : fallbackAug) if (!names.contains(f)) names.add(f);
+                    names = names.stream().distinct().sorted(String.CASE_INSENSITIVE_ORDER).collect(Collectors.toList());
+                }
                 List<String> finalNames = names;
                 SwingUtilities.invokeLater(() -> {
                     availableVoices.clear();
@@ -550,7 +623,12 @@ public class OsrsTtsConfigPanel extends PluginPanel {
             // ElevenLabs
             plugin.config.setElevenKey(elevenKey);
             plugin.config.setElevenModel(elevenModel);
+            // Random toggle
+            if (randomPerTagCheckbox != null) plugin.config.setRandomPerTag(randomPerTagCheckbox.isSelected());
+            // System property bridge for pipeline toggle if used
+            System.setProperty("osrs.tts.randomPerTag", Boolean.toString(plugin.config.isRandomPerTag()));
         }
+        refreshAssignmentStats();
     }
 
     private void openLoreSelectorDialog() {
@@ -780,6 +858,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         } catch (Exception ignored) {}
         // Auto-load voices for the chosen provider if possible
         scheduleAutoLoad();
+    refreshAssignmentStats();
     }
 
     private void setAzureSectionVisible(boolean vis) {
@@ -798,5 +877,19 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         if (elevenModelLabel != null) elevenModelLabel.setVisible(vis);
         if (elevenModelField != null) elevenModelField.setVisible(vis);
         revalidate(); repaint();
+    }
+
+    private void refreshAssignmentStats() {
+        if (assignmentsStatsLabel == null || plugin == null || plugin.config == null) return;
+        try {
+            com.example.osrstts.voice.VoiceRuntime rt = plugin != null ? plugin.voiceRuntime : null; // access via plugin
+            if (rt == null) { assignmentsStatsLabel.setText("Assignments: (runtime not ready)"); return; }
+            int total = rt.getAssignmentStore().all().size();
+            long eleven = rt.getAssignmentStore().all().values().stream().filter(v -> v.provider != null && v.provider.toLowerCase().contains("eleven")).count();
+            long azure = rt.getAssignmentStore().all().values().stream().filter(v -> v.provider != null && v.provider.toLowerCase().contains("azure")).count();
+            assignmentsStatsLabel.setText("Assignments: " + total + " (11L=" + eleven + ", Azure=" + azure + ")");
+        } catch (Exception ex) {
+            assignmentsStatsLabel.setText("Assignments: error");
+        }
     }
 }

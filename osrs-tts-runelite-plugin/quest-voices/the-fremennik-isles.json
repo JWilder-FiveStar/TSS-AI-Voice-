@@ -1,0 +1,20 @@
+{
+  "npcExact": {
+    "Bounty Hunter": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=gruff",
+    "King Vargas": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=regal",
+    "King Gjuki Sorvott IV": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=aged",
+    "Advisor Ghrim": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=advisory",
+    "Honour Guard": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=stout",
+    "Bard": "ElevenLabs:Daniel (onwK4e9ZLuTAKqWW03F9)|style=lyric",
+    "Brittle Warrior": "ElevenLabs:Fin (Xb7hH8MSUJpSbSDYk0k2)|style=icy",
+    "Brittle Archer": "ElevenLabs:Chris (iP95p4xoKVk53GoZ742B)|style=icy",
+    "Brittle Guard": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=icy",
+    "Morten": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=earnest",
+    "Fridleif": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=frozen"
+  },
+  "tags": {
+    "fremennik": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=tribal",
+    "jatiszo": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=measured",
+    "neitiznot": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=stout"
+  }
+}

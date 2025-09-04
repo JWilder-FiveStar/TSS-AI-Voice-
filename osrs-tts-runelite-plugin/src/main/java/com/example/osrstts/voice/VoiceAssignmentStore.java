@@ -28,13 +28,26 @@ public class VoiceAssignmentStore {
         public String voiceLabel; // human-readable label
         public long assignedAtEpochMs;
         public String assignedBy; // "auto" | "user"
+        public String primaryTag; // optional: tag used for assignment rotation
 
         public VoiceAssignment() {}
         public VoiceAssignment(String provider, String voiceId, String voiceLabel, long assignedAtEpochMs, String assignedBy) {
-            this.provider = provider; this.voiceId = voiceId; this.voiceLabel = voiceLabel; this.assignedAtEpochMs = assignedAtEpochMs; this.assignedBy = assignedBy;
+            this(provider, voiceId, voiceLabel, assignedAtEpochMs, assignedBy, null);
+        }
+        public VoiceAssignment(String provider, String voiceId, String voiceLabel, long assignedAtEpochMs, String assignedBy, String primaryTag) {
+            this.provider = provider; this.voiceId = voiceId; this.voiceLabel = voiceLabel; this.assignedAtEpochMs = assignedAtEpochMs; this.assignedBy = assignedBy; this.primaryTag = primaryTag;
         }
         public static VoiceAssignment auto(String provider, String voiceId, String voiceLabel) {
             return new VoiceAssignment(provider, voiceId, voiceLabel, Instant.now().toEpochMilli(), "auto");
+        }
+        public static VoiceAssignment user(String provider, String voiceId, String voiceLabel) {
+            return new VoiceAssignment(provider, voiceId, voiceLabel, Instant.now().toEpochMilli(), "user");
+        }
+        public static VoiceAssignment auto(String provider, String voiceId, String voiceLabel, String primaryTag) {
+            return new VoiceAssignment(provider, voiceId, voiceLabel, Instant.now().toEpochMilli(), "auto", primaryTag);
+        }
+        public static VoiceAssignment user(String provider, String voiceId, String voiceLabel, String primaryTag) {
+            return new VoiceAssignment(provider, voiceId, voiceLabel, Instant.now().toEpochMilli(), "user", primaryTag);
         }
     }
 

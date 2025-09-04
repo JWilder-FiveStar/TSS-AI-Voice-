@@ -1,0 +1,20 @@
+{
+  "npcExact": {
+    "Brundt the Chieftain": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=hearty",
+    "Sigli the Huntsman": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=stoic",
+    "Manni the Reveller": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=boisterous",
+    "Thora the Barkeep": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=warm",
+    "Olaf the Bard": "ElevenLabs:Daniel (onwK4e9ZLuTAKqWW03F9)|style=lyric",
+    "Askeladden": "ElevenLabs:Ethan (g5CIjZEefAph4nQFvHAz)|style=trickster",
+    "Koschei the deathless": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=ancient",
+    "Peer the Seer": "ElevenLabs:Fin (Xb7hH8MSUJpSbSDYk0k2)|style=mystic",
+    "Swensen the navigator": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=measured",
+    "Sigmund the Merchant": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=shrewd",
+    "Thorvald the Warrior": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=commanding",
+    "Fremennik Warrior": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=brash",
+    "Brynjolf": "ElevenLabs:Chris (iP95p4xoKVk53GoZ742B)|style=seasoned"
+  },
+  "tags": {
+    "fremennik": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=tribal"
+  }
+}

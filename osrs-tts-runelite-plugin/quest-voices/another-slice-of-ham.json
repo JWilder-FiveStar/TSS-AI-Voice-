@@ -1,0 +1,14 @@
+{
+  "npcExact": {
+    "Johanhus Ulsbrecht": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=zealous",
+    "Tegid": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=grumbling",
+    "Sigmund": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=scheming",
+    "Zanik": "ElevenLabs:Bella (EXAVITQu4vr4xnSDxMaL)|style=spirited",
+    "Urglar": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=intimidating",
+    "Oldak": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=academic"
+  },
+  "tags": {
+    "ham": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=fanatic",
+    "dorgeshuun": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=measured"
+  }
+}

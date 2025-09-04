@@ -1,0 +1,12 @@
+{
+  "npcExact": {
+    "Denulth": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=commanding",
+    "Tenzing": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=pragmatic",
+    "Harold": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=brash",
+    "Troll General": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=booming"
+  },
+  "tags": {
+    "troll": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=booming",
+    "burthorpe": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=stern"
+  }
+}

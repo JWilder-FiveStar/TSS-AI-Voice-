@@ -1,0 +1,17 @@
+{
+  "npcExact": {
+    "King Awowogei": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=imperious",
+    "Garkor": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=strategic",
+    "Louda": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=tense",
+    "Lumo": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=anxious",
+    "Kruk": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=brutal",
+    "G.L.O. Caranock": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=scheming",
+    "12th Squad Colonel": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=disciplined",
+    "Zooknock": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=arcane",
+    "Nieve": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=stoic"
+  },
+  "tags": {
+    "gnome": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=measured",
+    "monkey": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=regal"
+  }
+}

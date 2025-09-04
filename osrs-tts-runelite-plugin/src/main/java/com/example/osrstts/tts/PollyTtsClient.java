@@ -10,6 +10,7 @@ import com.example.osrstts.voice.WavUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import com.example.osrstts.OsrsTtsConfig;
 
 public class PollyTtsClient implements TtsClient {
     private final AmazonPolly polly;
@@ -36,4 +37,9 @@ public class PollyTtsClient implements TtsClient {
             return WavUtil.wrapPcmToWav(pcm, 22050, (short)16, (short)1);
         }
     }
+
+    @Override public boolean isConfigured(OsrsTtsConfig config) { return true; }
+    @Override public boolean testConnection(OsrsTtsConfig config) { return true; }
+    @Override public String getProviderName() { return "Polly"; }
+    @Override public void shutdown() { }
 }

@@ -19,9 +19,8 @@ application {
     applicationDefaultJvmArgs = [
             '-Duser.country=US',
             '-Duser.language=en',
-            '-Xmx1024m',
-            // Force-load our plugin on the classpath
-            '-Drunelite.plugin.class=com.example.osrstts.OsrsTtsPlugin'
+            '-Xmx1024m'
+            // Removed -Drunelite.plugin.class to avoid double-loading the plugin via forced class and classpath scanning
     ]
 }
 

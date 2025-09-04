@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "Enakhra": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=ancient",
+    "Zahur": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=scholarly",
+    "Lazim": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=craftsman",
+    "Boneguard": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=stone",
+    "Cam the Camel": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=comedic"
+  },
+  "tags": {
+    "desert": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=measured",
+    "ancient": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=ancient"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "npcExact": {
+    "Razmire Keelgan": "ElevenLabs:Alex (cjVigY5qzO86Huf0OWal)|style=afflicted",
+    "Ulsquire Shauncy": "ElevenLabs:Sam (yoZ06aMxZJJ28mfd3POQ)|style=earnest",
+    "Afflicted": "ElevenLabs:Adam (pNInz6obpgDQGcFmaJgB)|style=weak",
+    "Loar Shade": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=whispered",
+    "Phrin Shade": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=whispered",
+    "Riyl Shade": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=whispered"
+  },
+  "tags": {
+    "morytania": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=brooding",
+    "shade": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=whispered"
+  }
+}

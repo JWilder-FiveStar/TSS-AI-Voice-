@@ -1,0 +1,13 @@
+{
+  "npcExact": {
+    "Velorina": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=soothing",
+    "Necrovarus": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=ominous",
+    "Ghost Villager": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=whispered",
+    "Ghost Captain": "ElevenLabs:George (JBFqnCBsd6RMkjVDRZzb)|style=gravelly",
+    "Old Crone": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=raspy"
+  },
+  "tags": {
+    "ghost": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=whispered",
+    "pirate": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=seadog"
+  }
+}

@@ -54,6 +54,10 @@ public class VoiceRuntime {
     this.pipeline = new VoiceSelectionPipeline(cfg.getProvider(), selector, assignmentStore, new NpcMetadataService());
     }
 
+    public VoiceAssignmentStore getAssignmentStore() { return assignmentStore; }
+    public UsageTracker getUsageTracker() { return usage; }
+    public VoiceSelectionPipeline getPipeline() { return pipeline; }
+
     public void speakNpc(String npcName, String text, Set<String> tags) throws Exception {
     VoiceSelection sel = pipeline.chooseForNpc(null, npcName, text, tags);
         boolean debug = "true".equalsIgnoreCase(System.getProperty("osrs.tts.debug", "false"));
@@ -165,7 +169,7 @@ public class VoiceRuntime {
             byte[] hitMp3 = cache.get(key, "mp3");
             if (hitMp3 != null) return hitMp3;
         }
-        byte[] data = tts.synthesize(normalizedText, sel);
+    byte[] data = tts.synthesize(normalizedText, sel);
         usage.addCharacters(normalizedText.length());
         if (cache != null) {
             if (looksRiffWav(data)) cache.put(key, "wav", data);

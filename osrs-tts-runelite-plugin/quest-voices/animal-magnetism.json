@@ -1,0 +1,17 @@
+{
+  "npcExact": {
+    "Ava": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=bright",
+    "Savonthe": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=precise",
+    "Odd Old Man": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=eccentric",
+    "Undead Chicken": "ElevenLabs:Domi (AZnzlk1XvdvUeBnXmlld)|style=clucky",
+    "Undead Cow": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=low"
+  },
+  "npcRegex": {
+    "(?i)undead chicken": "ElevenLabs:Domi (AZnzlk1XvdvUeBnXmlld)|style=clucky",
+    "(?i)undead cow": "ElevenLabs:Arnold (VR6AewLTigWG4xSOukaG)|style=low"
+  },
+  "tags": {
+    "undead": "ElevenLabs:Dorothy (ThT5KcBeYPX3keUQqHPh)|style=haunting",
+    "experiment": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=curious"
+  }
+}
