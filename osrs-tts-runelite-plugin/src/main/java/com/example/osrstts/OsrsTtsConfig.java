@@ -73,6 +73,11 @@ public class OsrsTtsConfig {
         setIfMissing("eleven.key", "");
         setIfMissing("eleven.model", "eleven_turbo_v2_5");
 
+    // Feature toggles
+    setIfMissing("tts.feature.overhead.enabled", "true");
+    setIfMissing("tts.feature.diary.preface", "true");
+    setIfMissing("tts.feature.login.narration", "false");
+
         // AWS defaults (optional)
         setIfMissing("aws.region", "us-east-1");
 
@@ -258,6 +263,14 @@ public class OsrsTtsConfig {
         config.setProperty("azure.region", region);
         saveQuietly();
     }
+
+    // Feature toggles
+    public boolean isOverheadEnabled() { return config.getBoolean("tts.feature.overhead.enabled", true); }
+    public void setOverheadEnabled(boolean v) { config.setProperty("tts.feature.overhead.enabled", v); saveQuietly(); }
+    public boolean isDiaryPrefaceEnabled() { return config.getBoolean("tts.feature.diary.preface", true); }
+    public void setDiaryPrefaceEnabled(boolean v) { config.setProperty("tts.feature.diary.preface", v); saveQuietly(); }
+    public boolean isLoginNarrationEnabled() { return config.getBoolean("tts.feature.login.narration", false); }
+    public void setLoginNarrationEnabled(boolean v) { config.setProperty("tts.feature.login.narration", v); saveQuietly(); }
 
     // ElevenLabs
     public String getElevenKey() {

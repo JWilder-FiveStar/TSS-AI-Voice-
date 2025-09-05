@@ -35,6 +35,9 @@ public class OsrsTtsConfigPanel extends PluginPanel {
     private JButton playerChooseBtn;
     private JCheckBox enabledCheckbox;
     private JCheckBox narratorEnabledCheckbox;
+    private JCheckBox overheadEnabledCheckbox;
+    private JCheckBox diaryPrefaceCheckbox;
+    private JCheckBox loginNarrationCheckbox;
     private JComboBox<OsrsTtsRlConfig.Provider> providerCombo;
 
     // Azure UI refs for toggling
@@ -274,13 +277,26 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         voiceHeader.setFont(voiceHeader.getFont().deriveFont(Font.BOLD));
         add(voiceHeader, gbc);
 
-        // Narrator enabled
+        // Feature toggles section
     gbc.gridx = 0; gbc.gridy = 23; gbc.gridwidth = 2;
+        overheadEnabledCheckbox = new JCheckBox("Overhead speech (players & NPCs)", plugin != null && plugin.config != null && plugin.config.isOverheadEnabled());
+        add(overheadEnabledCheckbox, gbc);
+
+    gbc.gridx = 0; gbc.gridy = 24; gbc.gridwidth = 2;
+        diaryPrefaceCheckbox = new JCheckBox("Preface book/diary narration with player name", plugin != null && plugin.config != null && plugin.config.isDiaryPrefaceEnabled());
+        add(diaryPrefaceCheckbox, gbc);
+
+    gbc.gridx = 0; gbc.gridy = 25; gbc.gridwidth = 2;
+        loginNarrationCheckbox = new JCheckBox("Narrate login welcome/MOTD screen", plugin != null && plugin.config != null && plugin.config.isLoginNarrationEnabled());
+        add(loginNarrationCheckbox, gbc);
+
+        // Narrator enabled (moved after feature toggles)
+    gbc.gridx = 0; gbc.gridy = 26; gbc.gridwidth = 2;
         narratorEnabledCheckbox = new JCheckBox("Narrator for books/journals", config.narratorEnabled());
         add(narratorEnabledCheckbox, gbc);
 
         // Narrator Voice picker (pop-out)
-    gbc.gridx = 0; gbc.gridy = 24; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 27; gbc.gridwidth = 1;
         add(new JLabel("Narrator Voice:"), gbc);
         gbc.gridx = 1; gbc.gridwidth = 1;
         JPanel narrRow = new JPanel(new BorderLayout(5, 0));
@@ -293,7 +309,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(narrRow, gbc);
 
         // Player Voice picker (pop-out)
-    gbc.gridx = 0; gbc.gridy = 25; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 28; gbc.gridwidth = 1;
         add(new JLabel("Player Voice:"), gbc);
         gbc.gridx = 1; gbc.gridwidth = 1;
         JPanel playerRow = new JPanel(new BorderLayout(5, 0));
@@ -307,7 +323,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         add(playerRow, gbc);
 
         // Save Button
-    gbc.gridx = 0; gbc.gridy = 26; gbc.gridwidth = 1;
+    gbc.gridx = 0; gbc.gridy = 29; gbc.gridwidth = 1;
         JButton saveButton = new JButton("💾 Save Settings");
         add(saveButton, gbc);
         saveButton.addActionListener(new ActionListener() {
@@ -320,13 +336,13 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         });
 
         // Lore Voice Selector
-    gbc.gridx = 1; gbc.gridy = 26; gbc.gridwidth = 1;
+    gbc.gridx = 1; gbc.gridy = 29; gbc.gridwidth = 1;
         JButton loreSelectorBtn = new JButton("📜 Lore Voice Selector…");
         add(loreSelectorBtn, gbc);
         loreSelectorBtn.addActionListener(e -> openLoreSelectorDialog());
 
         // Advanced settings launcher
-    gbc.gridx = 0; gbc.gridy = 27; gbc.gridwidth = 2;
+    gbc.gridx = 0; gbc.gridy = 30; gbc.gridwidth = 2;
         JButton advancedBtn = new JButton("⚙️ Advanced Settings…");
         add(advancedBtn, gbc);
         advancedBtn.addActionListener(e -> {
@@ -335,7 +351,7 @@ public class OsrsTtsConfigPanel extends PluginPanel {
         });
 
         // Force narration scan button (helps when user feels narrator missed content)
-        gbc.gridx = 0; gbc.gridy = 28; gbc.gridwidth = 2;
+    gbc.gridx = 0; gbc.gridy = 31; gbc.gridwidth = 2;
             JButton forceNarrBtn = new JButton("🔄 Force Narration Scan");
             forceNarrBtn.setToolTipText("Immediately rescan UI widgets for book / parchment text (no throttling)");
             add(forceNarrBtn, gbc);
@@ -625,6 +641,9 @@ public class OsrsTtsConfigPanel extends PluginPanel {
             plugin.config.setElevenModel(elevenModel);
             // Random toggle
             if (randomPerTagCheckbox != null) plugin.config.setRandomPerTag(randomPerTagCheckbox.isSelected());
+            if (overheadEnabledCheckbox != null) plugin.config.setOverheadEnabled(overheadEnabledCheckbox.isSelected());
+            if (diaryPrefaceCheckbox != null) plugin.config.setDiaryPrefaceEnabled(diaryPrefaceCheckbox.isSelected());
+            if (loginNarrationCheckbox != null) plugin.config.setLoginNarrationEnabled(loginNarrationCheckbox.isSelected());
             // System property bridge for pipeline toggle if used
             System.setProperty("osrs.tts.randomPerTag", Boolean.toString(plugin.config.isRandomPerTag()));
         }

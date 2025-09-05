@@ -158,5 +158,21 @@
     "assignedAtEpochMs" : 1756956199771,
     "assignedBy" : "auto",
     "primaryTag" : "nobility"
+  },
+  "count check" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "voiceLabel" : "Adam (pNInz6obpgDQGcFmaJgB)",
+    "assignedAtEpochMs" : 1756956606016,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "murphy" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Sam (yoZ06aMxZJJ28mfd3POQ)",
+    "voiceLabel" : "Sam (yoZ06aMxZJJ28mfd3POQ)",
+    "assignedAtEpochMs" : 1757083871624,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
   }
 }

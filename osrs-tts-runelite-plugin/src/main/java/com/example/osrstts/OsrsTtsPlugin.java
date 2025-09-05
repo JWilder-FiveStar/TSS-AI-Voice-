@@ -146,9 +146,14 @@ public class OsrsTtsPlugin extends Plugin {
             narrationDetector.setLastLoadedGroupId(event.getGroupId());
             narrationDetector.maybeNarrateOpenText(client, config, voiceRuntime);
             int g = event.getGroupId();
-            if (g == 160 || g == 193 || g == 229) { // known quest / dialog groups
+            if (g == 160 || g == 193 || g == 229 ||
+                g == net.runelite.api.widgets.WidgetID.COLLECTION_LOG_ID ||
+                g == net.runelite.api.widgets.WidgetID.ADVENTURE_LOG_ID ||
+                g == net.runelite.api.widgets.WidgetID.KILL_LOGS_GROUP_ID ||
+                g == net.runelite.api.widgets.WidgetID.GENERIC_SCROLL_GROUP_ID) { // known quest / dialog / log groups
                 scheduleDelayedScan(100, g, debug);
                 scheduleDelayedScan(250, g, debug);
+                scheduleDelayedScan(500, g, debug);
             }
         } catch (Exception e) {
             if (debug) log.debug("WidgetLoaded error: {}", e.getMessage());
@@ -225,6 +230,7 @@ public class OsrsTtsPlugin extends Plugin {
     @Subscribe
     public void onGameTick(GameTick tick) {
         if (voiceRuntime == null || config == null || client == null) return;
+    if (!config.isOverheadEnabled()) return;
         try {
             // NPC overheads
             for (NPC npc : client.getNpcs()) {
