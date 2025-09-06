@@ -109,7 +109,7 @@ public class NarrationDetector {
                 }
             }
             if (sb.length() > before && effectiveGroupUsed == -1) effectiveGroupUsed = groupId;
-            if (sb.length() > 220) break; // slightly higher cap to allow bigger pages
+            if (sb.length() > 800) break; // increased from 220 to allow longer dialog
         }
         
         String text = sb.toString().trim();
@@ -170,7 +170,7 @@ public class NarrationDetector {
             }
             lastHash = hash;
             try {
-                String toSpeak = text.length() > 2400 ? text.substring(0, 2400) : text;
+                String toSpeak = text.length() > 4000 ? text.substring(0, 4000) : text;
 
                 // Optional preface: "<Player> opens the <Title>. It reads: ..." for book / diary style content
                 if (cfg.isDiaryPrefaceEnabled()) {

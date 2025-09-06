@@ -32,6 +32,10 @@ public class ElevenLabsTtsClient implements TtsClient {
 
     @Override
     public byte[] synthesize(String text, VoiceSelection sel) throws Exception {
+        // ElevenLabs API limit is 2048 chars per request (as of 2025); split if needed
+        if (text.length() > 2048) {
+            throw new IllegalArgumentException("Text too long for ElevenLabs (max 2048 chars per request). Split into smaller chunks.");
+        }
         String voiceId = extractVoiceId(sel.voiceName);
         if (voiceId == null || voiceId.isBlank()) {
             throw new IllegalArgumentException("ElevenLabs voice_id not set. Select a voice using the 'Load 11Labs Voices' button and pick one (Name (id)).");

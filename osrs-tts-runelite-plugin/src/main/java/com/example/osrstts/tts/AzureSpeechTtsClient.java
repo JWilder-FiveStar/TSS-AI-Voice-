@@ -35,6 +35,10 @@ public class AzureSpeechTtsClient implements TtsClient {
 
     @Override
     public byte[] synthesize(String text, VoiceSelection sel) throws Exception {
+        // Azure TTS limit is 5000 chars per request (as of 2025)
+        if (text.length() > 5000) {
+            throw new IllegalArgumentException("Text too long for Azure TTS (max 5000 chars per request). Split into smaller chunks.");
+        }
         final String ssml = buildSsml(sel.voiceName, sel.style, text);
         final String trimmedKey = key.trim();
 

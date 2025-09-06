@@ -21,14 +21,18 @@ public class PollyTtsClient implements TtsClient {
 
     @Override
     public byte[] synthesize(String text, VoiceSelection selection) throws Exception {
+        // Polly TTS limit is 3000 chars per request (as of 2025)
+        if (text.length() > 3000) {
+            throw new IllegalArgumentException("Text too long for Polly TTS (max 3000 chars per request). Split into smaller chunks.");
+        }
         String voiceId = selection != null && selection.voiceName != null ? selection.voiceName : "Matthew";
-    SynthesizeSpeechRequest request = new SynthesizeSpeechRequest()
+        SynthesizeSpeechRequest request = new SynthesizeSpeechRequest()
                 .withText(text)
                 .withVoiceId(voiceId)
-        // Use PCM so we can wrap it into a WAV container for unified playback
-        .withOutputFormat(OutputFormat.Pcm)
-        // Use 22050 Hz mono 16-bit; Polly's PCM returns raw little-endian 16-bit by default
-        .withSampleRate("22050");
+                // Use PCM so we can wrap it into a WAV container for unified playback
+                .withOutputFormat(OutputFormat.Pcm)
+                // Use 22050 Hz mono 16-bit; Polly's PCM returns raw little-endian 16-bit by default
+                .withSampleRate("22050");
 
         SynthesizeSpeechResult result = polly.synthesizeSpeech(request);
         try (InputStream in = result.getAudioStream(); ByteArrayOutputStream buf = new ByteArrayOutputStream()) {

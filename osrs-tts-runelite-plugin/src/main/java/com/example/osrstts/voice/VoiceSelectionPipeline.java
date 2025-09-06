@@ -56,13 +56,28 @@ public class VoiceSelectionPipeline {
     if ("ElevenLabs".equalsIgnoreCase(provider)) {
             String g = meta.gender;
             if ("male".equalsIgnoreCase(g) && looksFemaleName(sel.voiceName)) {
-                // Force a male-aligned voice from rotating pool or fallback
                 String forced = rotatingRandomFromTag("male", "male", key);
-                if (forced == null) forced = "Adam (pNInz6obpgDQGcFmaJgB)";
+                if (forced == null) {
+                    String[] pool = new String[] {
+                        "Adam (pNInz6obpgDQGcFmaJgB)", "Antoni (ErXwobaYiN019PkySvjV)", "Josh (TxGEqnHWrfWFTfGW9XjX)", "Arnold (VR6AewLTigWG4xSOukaG)",
+                        "Rachel (21m00Tcm4TlvDq8ikWAM)", "Bella (EXAVITQu4vr4xnSDxMaL)", "Dorothy (ThT5KcBeYPX3keUQqHPh)", "Elli (MF3mGyEYCl7XYWbV9V6O)",
+                        "Domi (AZnzlk1XvdvUeBnXmlld)", "Sam (yoZ06aMxZJJ28mfd3POQ)"
+                    };
+                    java.util.Random rng = new java.util.Random(System.nanoTime() ^ key.hashCode());
+                    forced = pool[rng.nextInt(pool.length)];
+                }
                 sel = VoiceSelection.of(forced, sel.style);
             } else if ("female".equalsIgnoreCase(g) && looksMaleName(sel.voiceName)) {
                 String forced = rotatingRandomFromTag("female", "female", key);
-                if (forced == null) forced = "Rachel (21m00Tcm4TlvDq8ikWAM)";
+                if (forced == null) {
+                    String[] pool = new String[] {
+                        "Adam (pNInz6obpgDQGcFmaJgB)", "Antoni (ErXwobaYiN019PkySvjV)", "Josh (TxGEqnHWrfWFTfGW9XjX)", "Arnold (VR6AewLTigWG4xSOukaG)",
+                        "Rachel (21m00Tcm4TlvDq8ikWAM)", "Bella (EXAVITQu4vr4xnSDxMaL)", "Dorothy (ThT5KcBeYPX3keUQqHPh)", "Elli (MF3mGyEYCl7XYWbV9V6O)",
+                        "Domi (AZnzlk1XvdvUeBnXmlld)", "Sam (yoZ06aMxZJJ28mfd3POQ)"
+                    };
+                    java.util.Random rng = new java.util.Random(System.nanoTime() ^ key.hashCode());
+                    forced = pool[rng.nextInt(pool.length)];
+                }
                 sel = VoiceSelection.of(forced, sel.style);
             }
         }
@@ -83,20 +98,28 @@ public class VoiceSelectionPipeline {
             boolean mismatch = ("male".equalsIgnoreCase(meta.gender) && looksFemaleName(sel.voiceName)) || ("female".equalsIgnoreCase(meta.gender) && looksMaleName(sel.voiceName));
             if (mismatch) {
                 String forced = rotatingRandomFromTag(meta.gender.toLowerCase(Locale.ROOT), meta.gender, key);
-                if (forced == null) forced = meta.gender.equalsIgnoreCase("male") ? "Adam (pNInz6obpgDQGcFmaJgB)" : "Rachel (21m00Tcm4TlvDq8ikWAM)";
+                if (forced == null) {
+                    String[] pool = new String[] {
+                        "Adam (pNInz6obpgDQGcFmaJgB)", "Antoni (ErXwobaYiN019PkySvjV)", "Josh (TxGEqnHWrfWFTfGW9XjX)", "Arnold (VR6AewLTigWG4xSOukaG)",
+                        "Rachel (21m00Tcm4TlvDq8ikWAM)", "Bella (EXAVITQu4vr4xnSDxMaL)", "Dorothy (ThT5KcBeYPX3keUQqHPh)", "Elli (MF3mGyEYCl7XYWbV9V6O)",
+                        "Domi (AZnzlk1XvdvUeBnXmlld)", "Sam (yoZ06aMxZJJ28mfd3POQ)"
+                    };
+                    java.util.Random rng = new java.util.Random(System.nanoTime() ^ key.hashCode());
+                    forced = pool[rng.nextInt(pool.length)];
+                }
                 sel = VoiceSelection.of(forced, sel.style);
             }
         }
         
-        // Final fallback: if we still have no valid voice for ElevenLabs, use safe defaults
+        // Final fallback: if we still have no valid voice for ElevenLabs, use a randomized mixed pool (not just Adam/Rachel)
         if ("ElevenLabs".equalsIgnoreCase(provider) && (sel.voiceName == null || !looksElevenId(sel.voiceName))) {
-            // Pick mixed gender fallback randomly instead of hard Adam/Rachel only
             String[] pool = new String[] {
                 "Adam (pNInz6obpgDQGcFmaJgB)", "Antoni (ErXwobaYiN019PkySvjV)", "Josh (TxGEqnHWrfWFTfGW9XjX)", "Arnold (VR6AewLTigWG4xSOukaG)",
                 "Rachel (21m00Tcm4TlvDq8ikWAM)", "Bella (EXAVITQu4vr4xnSDxMaL)", "Dorothy (ThT5KcBeYPX3keUQqHPh)", "Elli (MF3mGyEYCl7XYWbV9V6O)",
                 "Domi (AZnzlk1XvdvUeBnXmlld)", "Sam (yoZ06aMxZJJ28mfd3POQ)"
             };
-            String fallback = pool[Math.abs(key.hashCode()) % pool.length];
+            java.util.Random rng = new java.util.Random(System.nanoTime() ^ key.hashCode());
+            String fallback = pool[rng.nextInt(pool.length)];
             sel = VoiceSelection.of(fallback, sel.style);
         }
         
