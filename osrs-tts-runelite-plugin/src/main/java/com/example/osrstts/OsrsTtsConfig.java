@@ -74,7 +74,11 @@ public class OsrsTtsConfig {
         setIfMissing("eleven.model", "eleven_turbo_v2_5");
 
     // Feature toggles
+    // Legacy combined overhead toggle (kept for backward compat) – new granular toggles below
     setIfMissing("tts.feature.overhead.enabled", "true");
+    // New granular overhead toggles
+    setIfMissing("tts.feature.overhead.npc.enabled", "true");
+    setIfMissing("tts.feature.overhead.player.enabled", "false");
     setIfMissing("tts.feature.diary.preface", "true");
     setIfMissing("tts.feature.login.narration", "false");
 
@@ -267,6 +271,11 @@ public class OsrsTtsConfig {
     // Feature toggles
     public boolean isOverheadEnabled() { return config.getBoolean("tts.feature.overhead.enabled", true); }
     public void setOverheadEnabled(boolean v) { config.setProperty("tts.feature.overhead.enabled", v); saveQuietly(); }
+    // New granular overhead toggles (npc & player)
+    public boolean isNpcOverheadEnabled() { return config.getBoolean("tts.feature.overhead.npc.enabled", true); }
+    public void setNpcOverheadEnabled(boolean v) { config.setProperty("tts.feature.overhead.npc.enabled", v); saveQuietly(); }
+    public boolean isPlayerOverheadEnabled() { return config.getBoolean("tts.feature.overhead.player.enabled", false); }
+    public void setPlayerOverheadEnabled(boolean v) { config.setProperty("tts.feature.overhead.player.enabled", v); saveQuietly(); }
     public boolean isDiaryPrefaceEnabled() { return config.getBoolean("tts.feature.diary.preface", true); }
     public void setDiaryPrefaceEnabled(boolean v) { config.setProperty("tts.feature.diary.preface", v); saveQuietly(); }
     public boolean isLoginNarrationEnabled() { return config.getBoolean("tts.feature.login.narration", false); }

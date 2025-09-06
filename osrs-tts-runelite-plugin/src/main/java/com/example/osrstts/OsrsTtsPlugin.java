@@ -230,42 +230,45 @@ public class OsrsTtsPlugin extends Plugin {
     @Subscribe
     public void onGameTick(GameTick tick) {
         if (voiceRuntime == null || config == null || client == null) return;
-    if (!config.isOverheadEnabled()) return;
+    // Legacy master toggle still honored; then granular toggles decide which categories run
+	if (!config.isOverheadEnabled()) return;
         try {
-            // NPC overheads
-            for (NPC npc : client.getNpcs()) {
-                if (npc == null) continue;
-                String txt = npc.getOverheadText();
-                if (txt == null || txt.isBlank()) continue;
-                String clean = stripTags(txt).trim();
-                if (clean.isEmpty()) continue;
-                int id = npc.getIndex();
-                String hash = Integer.toHexString((clean+"|"+id).hashCode());
-                String prev = npcOverheadHash.get(id);
-                if (hash.equals(prev)) continue; // same as last tick
-                npcOverheadHash.put(id, hash);
-                String name = sanitizeName(npc.getName());
-                if (name.isBlank()) name = "NPC";
-                voiceRuntime.speakNpc(name, clean, voiceRuntime.inferTags(name));
+            if (config.isNpcOverheadEnabled()) {
+                for (NPC npc : client.getNpcs()) {
+                    if (npc == null) continue;
+                    String txt = npc.getOverheadText();
+                    if (txt == null || txt.isBlank()) continue;
+                    String clean = stripTags(txt).trim();
+                    if (clean.isEmpty()) continue;
+                    int id = npc.getIndex();
+                    String hash = Integer.toHexString((clean+"|"+id).hashCode());
+                    String prev = npcOverheadHash.get(id);
+                    if (hash.equals(prev)) continue; // same as last tick
+                    npcOverheadHash.put(id, hash);
+                    String name = sanitizeName(npc.getName());
+                    if (name.isBlank()) name = "NPC";
+                    voiceRuntime.speakNpc(name, clean, voiceRuntime.inferTags(name));
+                }
             }
-            // Player overheads (local + others) – treat local as player voice
-            for (Player p : client.getPlayers()) {
-                if (p == null) continue;
-                String txt = p.getOverheadText();
-                if (txt == null || txt.isBlank()) continue;
-                String clean = stripTags(txt).trim();
-                if (clean.isEmpty()) continue;
-                int id = System.identityHashCode(p); // use identity hash as stable session key
-                String hash = Integer.toHexString((clean+"|P|"+id).hashCode());
-                String prev = playerOverheadHash.get(id);
-                if (hash.equals(prev)) continue;
-                playerOverheadHash.put(id, hash);
-                String self = localPlayerName();
-                String name = sanitizeName(p.getName());
-                if (self != null && name.equalsIgnoreCase(self)) {
-                    voiceRuntime.speakPlayer(clean);
-                } else {
-                    voiceRuntime.speakNpc(name.isBlank()?"Player":name, clean, voiceRuntime.inferTags(name));
+            if (config.isPlayerOverheadEnabled()) {
+                for (Player p : client.getPlayers()) {
+                    if (p == null) continue;
+                    String txt = p.getOverheadText();
+                    if (txt == null || txt.isBlank()) continue;
+                    String clean = stripTags(txt).trim();
+                    if (clean.isEmpty()) continue;
+                    int id = System.identityHashCode(p); // stable for session
+                    String hash = Integer.toHexString((clean+"|P|"+id).hashCode());
+                    String prev = playerOverheadHash.get(id);
+                    if (hash.equals(prev)) continue;
+                    playerOverheadHash.put(id, hash);
+                    String self = localPlayerName();
+                    String name = sanitizeName(p.getName());
+                    if (self != null && name.equalsIgnoreCase(self)) {
+                        voiceRuntime.speakPlayer(clean);
+                    } else {
+                        voiceRuntime.speakNpc(name.isBlank()?"Player":name, clean, voiceRuntime.inferTags(name));
+                    }
                 }
             }
         } catch (Exception ignored) { }
