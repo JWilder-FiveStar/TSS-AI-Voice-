@@ -83,8 +83,8 @@ public class NarrationDetector {
         
         StringBuilder sb = new StringBuilder();
         int effectiveGroupUsed = -1;
-        // Prefer the most recently loaded widget group if any
-        if (lastLoadedGroupId != null) {
+        // Prefer the most recently loaded widget group if any (but skip chat windows)
+        if (lastLoadedGroupId != null && lastLoadedGroupId != 270) {
             Widget last = client.getWidget(lastLoadedGroupId, 0);
             if (last != null) {
                 collectVisibleText(last, sb);
@@ -95,6 +95,8 @@ public class NarrationDetector {
         // Scan all groups each time (prioritized order). Stop once enough content accumulated.
         for (int groupId : SCAN_GROUPS) {
             if (groupId == WidgetID.LOGIN_CLICK_TO_PLAY_GROUP_ID && !cfg.isLoginNarrationEnabled()) continue;
+            // Skip chat window - group 270 contains chat history which should be handled by chat message events
+            if (groupId == 270) continue;
             Widget group = client.getWidget(groupId, 0);
             if (group == null) continue;
             int before = sb.length();
@@ -309,14 +311,35 @@ public class NarrationDetector {
     private static boolean isNoisePanel(String text, int groupId) {
         if (text == null || text.isEmpty()) return false;
         String lower = text.toLowerCase();
+        
+        // Explicit chat window group (should be handled by chat events, not narration)
+        if (groupId == 270) return true;
+        
         // Skip quest list panels or filter/chat control clusters
         if (lower.contains("quest list") && text.split("\n").length > 30) return true;
+        
         // UI filter words cluster (chat channel toggles)
         String[] uiWords = {"game", "public", "private", "clan", "trade"};
         int hits = 0; for (String w : uiWords) if (lower.contains("\n"+w+"\n")) hits++;
         if (hits >= 3 && text.length() < 1200) return true;
-        // Large numeric-dense block
+        
+        // Chat-like content patterns (repetitive game messages)
         String[] lines = text.split("\n+");
+        if (lines.length > 10) {
+            int catchMessages = 0;
+            int broadcastMessages = 0;
+            int attemptMessages = 0;
+            for (String line : lines) {
+                String l = line.trim().toLowerCase();
+                if (l.startsWith("you catch") || l.startsWith("you attempt")) attemptMessages++;
+                if (l.contains("broadcast:")) broadcastMessages++;
+                if (l.matches("\\d{2}:\\d{2}:\\d{2}.*")) catchMessages++; // timestamp pattern
+            }
+            // If mostly repetitive game actions or chat timestamps, treat as noise
+            if (attemptMessages > lines.length * 0.3 || catchMessages > 3) return true;
+        }
+        
+        // Large numeric-dense block
         int numeric = 0; int total = 0;
         for (String l : lines) {
             String s = l.trim(); if (s.isEmpty()) continue; total++;

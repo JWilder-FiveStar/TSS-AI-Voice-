@@ -23,8 +23,8 @@ java {
 }
 
 dependencies {
-    // Build against the same RuneLite client version observed at runtime (1.11.15)
-    compileOnly 'net.runelite:client:1.11.15'
+    // Build against the same RuneLite client version observed at runtime (1.11.16)
+    compileOnly 'net.runelite:client:1.11.16'
 
     implementation 'com.amazonaws:aws-java-sdk-polly:1.12.300'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
@@ -37,7 +37,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
     // For the dev runner in test sources
-    testImplementation 'net.runelite:client:1.11.15'
+    testImplementation 'net.runelite:client:1.11.16'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -45,33 +45,53 @@ tasks.withType(JavaCompile).configureEach {
     options.release.set(11)
 }
 
-jar {
-    // Keep it as a thin jar; RuneLite loads it and supplies dependencies
-    manifest {
-        attributes('Main-Class': 'com.example.osrstts.OsrsTtsPlugin')
+// We need a self-contained jar when dropping into the external plugins folder because
+// RuneLite's external plugin loader does NOT provide third-party libraries (AWS, Jackson, etc.).
+// Replace the default thin jar with a fat jar under the SAME filename so existing copy tasks keep working.
+tasks.named('jar') {
+    // Disable the original thin jar behavior (we'll rebuild contents below)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest { attributes('Main-Class': 'com.example.osrstts.OsrsTtsPlugin', 'Multi-Release': true) }
+    doFirst {
+        // Clear any previous contents to avoid mixing thin + fat
+        archiveClassifier.set("")
+    }
+    from ({
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }) {
+        // Exclude signature/indices to avoid warnings
+        exclude 'META-INF/INDEX.LIST'
+        exclude 'META-INF/*.SF'
+        exclude 'META-INF/*.DSA'
+        exclude 'META-INF/*.RSA'
+        exclude '**/module-info.class'
     }
 }
 
-// Build an uber/fat jar for local external plugin loading by RuneLite
-tasks.register('fatJar', Jar) {
-    dependsOn configurations.runtimeClasspath, jar
-    archiveClassifier.set('all')
-    archiveFileName.set("${project.name}-${project.version}-all.jar")
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+// Convenience alias (optional) if someone still wants to invoke fatJar explicitly
+tasks.register('fatJar') {
+    dependsOn tasks.named('jar')
+    group = 'build'
+    description = 'Alias – builds the (already fat) jar.'
+}
 
-    from sourceSets.main.output
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-
-    exclude 'META-INF/INDEX.LIST'
-    exclude 'META-INF/*.SF'
-    exclude 'META-INF/*.DSA'
-    exclude 'META-INF/*.RSA'
-    exclude '**/module-info.class'
-
-    manifest {
-        attributes('Main-Class': 'com.example.osrstts.OsrsTtsPlugin', 'Multi-Release': true)
+// Temporary diagnostic task: lists entries related to plugin descriptor & main class
+tasks.register('inspectPluginJar') {
+    dependsOn tasks.named('jar')
+    doLast {
+        def jarFile = tasks.named('jar').get().archiveFile.get().asFile
+        println "Inspecting jar: ${jarFile} (size=${jarFile.length()} bytes)"
+        def zip = new java.util.zip.ZipFile(jarFile)
+        def hits = []
+        zip.entries().each { e ->
+            if (e.name.toLowerCase().contains('runelite-plugin.properties') || e.name.contains('OsrsTtsPlugin.class')) {
+                hits << e.name
+            }
+        }
+        println 'Matched entries:'
+        hits.each { println '  ' + it }
+        if (hits.isEmpty()) println '  (none)'
+        zip.close()
     }
 }
 
