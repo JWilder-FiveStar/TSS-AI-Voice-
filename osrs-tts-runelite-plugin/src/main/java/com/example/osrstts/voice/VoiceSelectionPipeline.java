@@ -31,16 +31,18 @@ public class VoiceSelectionPipeline {
         NpcMetadataService.NpcMetadata meta = npcService.analyzeNpc(npcName);
         String key = (npcId != null && npcId > 0) ? ("id:" + npcId) : npcName.toLowerCase();
         VoiceAssignmentStore.VoiceAssignment locked = store.get(key).orElse(null);
-        if (locked != null) {
+        // Only honor persisted manual assignments; auto picks should not override explicit mappings
+        if (locked != null && "user".equalsIgnoreCase(locked.assignedBy)) {
             return VoiceSelection.of(locked.voiceId != null && !locked.voiceId.isBlank() ? locked.voiceId : locked.voiceLabel, inferStyle(lineText));
         }
         // Merge tags with metadata
         java.util.Set<String> tags = new java.util.HashSet<>(meta.allTags);
         if (inferredTags != null) tags.addAll(inferredTags);
-    // Apply selection (base mapping)
-    VoiceSelection sel = selector.select(npcName, lineText, tags);
+        // Apply selection (base mapping)
+        VoiceSelection sel = selector.select(npcName, lineText, tags);
+        boolean mappingChoseVoice = sel != null && sel.voiceName != null && (!"ElevenLabs".equalsIgnoreCase(provider) || looksElevenId(sel.voiceName));
         // ElevenLabs dynamic enhancement: if selection lacks an id pattern, try catalog tag-driven pick
-    if ("ElevenLabs".equalsIgnoreCase(provider) && (sel.voiceName == null || !looksElevenId(sel.voiceName)) && elevenCatalog != null) {
+        if (!mappingChoseVoice && "ElevenLabs".equalsIgnoreCase(provider) && (sel.voiceName == null || !looksElevenId(sel.voiceName)) && elevenCatalog != null) {
             // Build pooled candidates for each tag, prefer gender-matched subset when possible
             for (String t : tags) {
                 String pooled = pooledPickForTag(t, meta.gender, key);
@@ -52,8 +54,8 @@ public class VoiceSelectionPipeline {
                 if (gPick != null && looksElevenId(gPick)) sel = VoiceSelection.of(gPick, sel.style);
             }
         }
-        // Gender guardrail: if metadata gender is male/female and provider ElevenLabs, prefer matching voices
-    if ("ElevenLabs".equalsIgnoreCase(provider)) {
+        // Gender guardrail should not override explicit mapping
+        if (!mappingChoseVoice && "ElevenLabs".equalsIgnoreCase(provider)) {
             String g = meta.gender;
             if ("male".equalsIgnoreCase(g) && looksFemaleName(sel.voiceName)) {
                 String forced = rotatingRandomFromTag("male", "male", key);
@@ -81,9 +83,9 @@ public class VoiceSelectionPipeline {
                 sel = VoiceSelection.of(forced, sel.style);
             }
         }
-        // Optionally randomize within tag pool for more variety prior to persistence
+        // Optionally randomize within tag pool for more variety prior to persistence, but don't override explicit mapping
         String primaryTag = null;
-    if ("ElevenLabs".equalsIgnoreCase(provider) && elevenCatalog != null && Boolean.parseBoolean(System.getProperty("osrs.tts.randomPerTag","true"))) {
+        if (!mappingChoseVoice && "ElevenLabs".equalsIgnoreCase(provider) && elevenCatalog != null && Boolean.parseBoolean(System.getProperty("osrs.tts.randomPerTag","true"))) {
             for (String t : tags) {
                 String randomized = rotatingRandomFromTag(t, meta.gender, key);
                 if (randomized != null && looksElevenId(randomized)) { sel = VoiceSelection.of(randomized, sel.style); primaryTag = t; break; }
@@ -93,40 +95,16 @@ public class VoiceSelectionPipeline {
             // choose a stable representative tag for bookkeeping
             primaryTag = tags.iterator().next();
         }
-        // Final enforcement: if gender known and mismatch persists, hard swap
-    if ("ElevenLabs".equalsIgnoreCase(provider) && meta.gender != null && !"neutral".equalsIgnoreCase(meta.gender)) {
-            boolean mismatch = ("male".equalsIgnoreCase(meta.gender) && looksFemaleName(sel.voiceName)) || ("female".equalsIgnoreCase(meta.gender) && looksMaleName(sel.voiceName));
-            if (mismatch) {
-                String forced = rotatingRandomFromTag(meta.gender.toLowerCase(Locale.ROOT), meta.gender, key);
-                if (forced == null) {
-                    String[] pool = new String[] {
-                        "Adam (pNInz6obpgDQGcFmaJgB)", "Antoni (ErXwobaYiN019PkySvjV)", "Josh (TxGEqnHWrfWFTfGW9XjX)", "Arnold (VR6AewLTigWG4xSOukaG)",
-                        "Rachel (21m00Tcm4TlvDq8ikWAM)", "Bella (EXAVITQu4vr4xnSDxMaL)", "Dorothy (ThT5KcBeYPX3keUQqHPh)", "Elli (MF3mGyEYCl7XYWbV9V6O)",
-                        "Domi (AZnzlk1XvdvUeBnXmlld)", "Sam (yoZ06aMxZJJ28mfd3POQ)"
-                    };
-                    java.util.Random rng = new java.util.Random(System.nanoTime() ^ key.hashCode());
-                    forced = pool[rng.nextInt(pool.length)];
-                }
-                sel = VoiceSelection.of(forced, sel.style);
-            }
-        }
-        
-        // Final fallback: if we still have no valid voice for ElevenLabs, use a randomized mixed pool (not just Adam/Rachel)
-        if ("ElevenLabs".equalsIgnoreCase(provider) && (sel.voiceName == null || !looksElevenId(sel.voiceName))) {
-            String[] pool = new String[] {
-                "Adam (pNInz6obpgDQGcFmaJgB)", "Antoni (ErXwobaYiN019PkySvjV)", "Josh (TxGEqnHWrfWFTfGW9XjX)", "Arnold (VR6AewLTigWG4xSOukaG)",
-                "Rachel (21m00Tcm4TlvDq8ikWAM)", "Bella (EXAVITQu4vr4xnSDxMaL)", "Dorothy (ThT5KcBeYPX3keUQqHPh)", "Elli (MF3mGyEYCl7XYWbV9V6O)",
-                "Domi (AZnzlk1XvdvUeBnXmlld)", "Sam (yoZ06aMxZJJ28mfd3POQ)"
-            };
-            java.util.Random rng = new java.util.Random(System.nanoTime() ^ key.hashCode());
-            String fallback = pool[rng.nextInt(pool.length)];
-            sel = VoiceSelection.of(fallback, sel.style);
-        }
-        
-        // Persist auto-assignment for stability after initial pick (store primary tag for future analytics)
-        // Only persist after ensuring we have a diversified voice (avoid locking into Adam/Rachel immediately for generic NPCs)
-        if (!looksDefaultPair(sel.voiceName)) {
+
+        // If a previous auto assignment existed and mapping chose a specific voice, refresh the store to align
+        if (mappingChoseVoice) {
             store.put(key, VoiceAssignmentStore.VoiceAssignment.auto(provider, sel.voiceName, sel.voiceName, primaryTag));
+        } else {
+            // Persist auto-assignment for stability after initial pick (store primary tag for future analytics)
+            // Only persist after ensuring we have a diversified voice (avoid locking into Adam/Rachel immediately for generic NPCs)
+            if (!looksDefaultPair(sel.voiceName)) {
+                store.put(key, VoiceAssignmentStore.VoiceAssignment.auto(provider, sel.voiceName, sel.voiceName, primaryTag));
+            }
         }
         return sel;
     }
@@ -153,7 +131,7 @@ public class VoiceSelectionPipeline {
     }
 
     private String rotatingRandomFromTag(String tag, String gender, String seed) {
-        if (tag == null || elevenCatalog == null) return null;
+        if (tag == null) return null;
         elevenCatalog.ensureLoaded();
         List<String> pool = tagVoicePools.computeIfAbsent(tag.toLowerCase(Locale.ROOT), t -> buildPoolForTag(t));
         if (pool == null || pool.isEmpty()) return null;

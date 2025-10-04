@@ -2,6 +2,7 @@ package com.example.osrstts.voice;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonParser;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -10,6 +11,10 @@ import java.util.regex.Pattern;
 
 public class VoiceSelector {
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    static {
+        // Allow // and /* */ comments in JSON mapping files
+        MAPPER.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+    }
     // Session-level tracking of unmapped NPC names to avoid duplicate writes
     private static final java.util.Set<String> UNMAPPED = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
     private volatile long lastReloadTime = System.currentTimeMillis();
@@ -21,6 +26,9 @@ public class VoiceSelector {
     private final Map<String, String> exactNpcMap = new HashMap<>();
     private final Map<String, String> tagMap = new HashMap<>();
     private final List<Map.Entry<Pattern, String>> regexNpcMap = new ArrayList<>();
+
+    // Normalized-name index for tolerant exact matches (case/spacing/punct)
+    private final Map<String, String> normalizedExactNpcMap = new HashMap<>();
 
     private final String npcMaleVoice;
     private final String npcFemaleVoice;
@@ -146,8 +154,8 @@ public class VoiceSelector {
         this.npcMaleVoice = npcMaleVoice;
         this.npcFemaleVoice = npcFemaleVoice;
         this.npcKidVoice = npcKidVoice;
-    this.initialMappingPath = mappingFilePath;
-    loadMapping(mappingFilePath);
+        this.initialMappingPath = mappingFilePath;
+        loadMapping(mappingFilePath);
     }
 
     private void loadMapping(String path) {
@@ -174,19 +182,62 @@ public class VoiceSelector {
                     parseMappingJson(json);
                 }
             }
-            // Finally, if a filesystem folder 'quest-voices' exists beside the working directory, merge all *.json files
+            // Finally, if a filesystem folder exists, merge all *.json files from likely locations
             try {
-                java.nio.file.Path dir = java.nio.file.Path.of("quest-voices");
-                if (java.nio.file.Files.isDirectory(dir)) {
-                    try (var stream = java.nio.file.Files.list(dir)) {
-                        stream.filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".json"))
-                                .sorted() // deterministic order
-                                .forEach(p -> {
-                                    try {
-                                        String json = java.nio.file.Files.readString(p);
+                // Primary search locations
+                java.util.List<java.nio.file.Path> candidates = new java.util.ArrayList<>();
+                String override = System.getProperty("osrs.tts.questVoicesDir", System.getenv("OSRS_TTS_QUEST_VOICES_DIR"));
+                if (override != null && !override.isBlank()) {
+                    candidates.add(java.nio.file.Path.of(override));
+                }
+                candidates.add(java.nio.file.Path.of("quest-voices"));
+                // Also check common repo-relative path if running from repo root
+                candidates.add(java.nio.file.Path.of("osrs-tts-runelite-plugin", "quest-voices"));
+                // Also check config folder where users may drop overrides
+                candidates.add(java.nio.file.Path.of("config", "osrs-tts", "quest-voices"));
+
+                for (java.nio.file.Path dir : candidates) {
+                    if (java.nio.file.Files.isDirectory(dir)) {
+                        try (var stream = java.nio.file.Files.list(dir)) {
+                            stream.filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".json"))
+                                    .sorted() // deterministic order
+                                    .forEach(p -> {
+                                        try {
+                                            String json = java.nio.file.Files.readString(p);
+                                            parseMappingJson(json);
+                                        } catch (Exception ignored) { }
+                                    });
+                        }
+                    }
+                }
+            } catch (Exception ignored) { }
+
+            // As a last resort, scan the plugin jar for quest-voices/*.json resources
+            try {
+                java.net.URL codeSrc = VoiceSelector.class.getProtectionDomain().getCodeSource().getLocation();
+                if (codeSrc != null) {
+                    String loc = codeSrc.toURI().getPath();
+                    if (loc != null && loc.toLowerCase(Locale.ROOT).endsWith(".jar")) {
+                        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(new java.io.File(loc))) {
+                            java.util.Enumeration<? extends java.util.zip.ZipEntry> e = zip.entries();
+                            java.util.List<String> entries = new java.util.ArrayList<>();
+                            while (e.hasMoreElements()) {
+                                var ze = e.nextElement();
+                                String name = ze.getName();
+                                if (name != null && name.startsWith("quest-voices/") && name.toLowerCase(Locale.ROOT).endsWith(".json")) {
+                                    entries.add(name);
+                                }
+                            }
+                            java.util.Collections.sort(entries);
+                            for (String res : entries) {
+                                try (java.io.InputStream is = VoiceSelector.class.getClassLoader().getResourceAsStream(res)) {
+                                    if (is != null) {
+                                        String json = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
                                         parseMappingJson(json);
-                                    } catch (Exception ignored) { }
-                                });
+                                    }
+                                } catch (Exception ignored) {}
+                            }
+                        }
                     }
                 }
             } catch (Exception ignored) { }
@@ -197,7 +248,12 @@ public class VoiceSelector {
         try {
             JsonNode root = MAPPER.readTree(json);
             JsonNode exact = root.path("npcExact");
-            exact.fieldNames().forEachRemaining(name -> exactNpcMap.put(name, exact.get(name).asText()));
+            exact.fieldNames().forEachRemaining(name -> {
+                String val = exact.get(name).asText();
+                exactNpcMap.put(name, val);
+                String norm = normalizeNameKey(name);
+                if (norm != null && !norm.isEmpty()) normalizedExactNpcMap.put(norm, val);
+            });
 
             JsonNode tags = root.path("tags");
             tags.fieldNames().forEachRemaining(tag -> tagMap.put(tag.toLowerCase(Locale.ROOT), tags.get(tag).asText()));
@@ -211,11 +267,18 @@ public class VoiceSelector {
     }
 
     public VoiceSelection select(String npcName, String lineText, Set<String> inferredTags) {
-    maybeReload();
+        maybeReload();
         String voice = null;
 
         if (npcName != null) {
             String exact = resolveProviderSpecific(exactNpcMap.get(npcName));
+            if (exact == null) {
+                // Try tolerant normalized lookup
+                String normKey = normalizeNameKey(npcName);
+                if (normKey != null) {
+                    exact = resolveProviderSpecific(normalizedExactNpcMap.get(normKey));
+                }
+            }
             if (exact != null) voice = exact;
 
             if (voice == null) {
@@ -312,6 +375,7 @@ public class VoiceSelector {
             exactNpcMap.clear();
             tagMap.clear();
             regexNpcMap.clear();
+            normalizedExactNpcMap.clear();
             loadMapping(initialMappingPath);
             lastReloadTime = now;
         }
@@ -376,6 +440,23 @@ public class VoiceSelector {
         if (pool == null || pool.length == 0) return null;
         int idx = seed % pool.length;
         return pool[idx];
+    }
+
+    // Normalizes NPC name for tolerant lookup: lower-case, trim, collapse spaces, strip common punctuation
+    private String normalizeNameKey(String name) {
+        if (name == null) return null;
+        String n = name
+                .replace('\u00A0',' ') // non-breaking space
+                .replace('\u2019', '\'') // curly apostrophe to straight
+                .replace('\u2013', '-') // en-dash to hyphen
+                .replace('\u2014', '-') // em-dash to hyphen
+                .trim()
+                .toLowerCase(Locale.ROOT);
+        // remove duplicate spaces
+        n = n.replaceAll("\\s+", " ");
+        // strip trailing/leading punctuation segments
+        n = n.replaceAll("^[\\p{Punct}]+|[\\p{Punct}]+$", "");
+        return n;
     }
 
     private String autoDefaultVoice(String npcName) {

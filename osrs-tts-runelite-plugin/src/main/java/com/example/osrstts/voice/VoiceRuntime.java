@@ -30,7 +30,7 @@ public class VoiceRuntime {
 
     public VoiceRuntime(OsrsTtsConfig cfg) {
         this.cfg = cfg;
-    this.selector = new VoiceSelector(
+        this.selector = new VoiceSelector(
                 cfg.getProvider(),
                 cfg.getDefaultVoice(),
                 cfg.getVoiceMappingFile(),
@@ -48,10 +48,10 @@ public class VoiceRuntime {
             // Prefer WAV for unified playback by switching Polly to PCM if implemented.
             this.tts = new PollyTtsClient();
         }
-    this.cache = cfg.isCacheEnabled() ? new AudioCache(cfg.getCacheDir()) : null;
-    this.usage = new UsageTracker();
-    this.assignmentStore = new VoiceAssignmentStore();
-    this.pipeline = new VoiceSelectionPipeline(cfg.getProvider(), selector, assignmentStore, new NpcMetadataService());
+        this.cache = cfg.isCacheEnabled() ? new AudioCache(cfg.getCacheDir()) : null;
+        this.usage = new UsageTracker();
+        this.assignmentStore = new VoiceAssignmentStore();
+        this.pipeline = new VoiceSelectionPipeline(cfg.getProvider(), selector, assignmentStore, new NpcMetadataService());
     }
 
     public VoiceAssignmentStore getAssignmentStore() { return assignmentStore; }
@@ -59,7 +59,7 @@ public class VoiceRuntime {
     public VoiceSelectionPipeline getPipeline() { return pipeline; }
 
     public void speakNpc(String npcName, String text, Set<String> tags) throws Exception {
-    VoiceSelection sel = pipeline.chooseForNpc(null, npcName, text, tags);
+        VoiceSelection sel = pipeline.chooseForNpc(null, npcName, text, tags);
         boolean debug = "true".equalsIgnoreCase(System.getProperty("osrs.tts.debug", "false"));
         if ("ElevenLabs".equalsIgnoreCase(cfg.getProvider())) {
             // Ensure sel.voiceName contains a voice_id (format: Name (id))
@@ -75,39 +75,14 @@ public class VoiceRuntime {
         if (debug) {
             System.out.println("TTS NPC sel voice=" + sel.voiceName + ", tags=" + (tags == null ? "[]" : tags.toString()) + ", npc='" + npcName + "'");
         }
-    String normalized = AudioCache.normalizeText(text);
-    String npcKey = (npcName == null || npcName.isEmpty()) ? "npc" : npcName.toLowerCase();
-    String cacheKey = cacheKey("npc", sel, normalized);
+        String normalized = AudioCache.normalizeText(text);
+        String cacheKey = cacheKey("npc", sel, normalized);
         if (!shouldPlay(cacheKey)) return;
-        try {
-            byte[] audio = getOrSynthesize(cacheKey, sel, normalized);
-            playAudio(audio);
-        } catch (RuntimeException ex) {
-            String msg = ex.getMessage() == null ? "" : ex.getMessage();
-            if (msg.contains("Azure TTS error 400")) {
-                // Retry with a safe fallback voice based on inferred gender
-                boolean female = tags != null && tags.contains("female");
-                boolean kid = tags != null && tags.contains("kid");
-                String fallbackVoice = kid ? "en-US-JennyNeural" : (female ? "en-US-JennyNeural" : "en-US-GuyNeural");
-                if (debug) {
-                    System.out.println("TTS NPC Azure 400, retry with fallback voice=" + fallbackVoice + ", npc='" + npcName + "'");
-                }
-                VoiceSelection fallbackSel = VoiceSelection.of(fallbackVoice, sel.style);
-                String fbKey = cacheKey("npc", fallbackSel, text);
-                try {
-                    byte[] audio = getOrSynthesize(fbKey, fallbackSel, text);
-                    playAudio(audio);
-                    return;
-                } catch (Exception ignored) {
-                    // give up to outer layer
-                }
-            }
-            throw ex;
-        }
+        submitSynthesisAndPlay(cacheKey, sel, normalized);
     }
 
     public void speakNarrator(String text) throws Exception {
-    VoiceSelection sel;
+        VoiceSelection sel;
         String prov = cfg.getProvider();
         if ("Azure".equalsIgnoreCase(prov)) {
             sel = VoiceSelection.of(cfg.getNarratorVoice(), cfg.getNarratorStyle());
@@ -128,11 +103,10 @@ public class VoiceRuntime {
         } else {
             sel = VoiceSelection.of("Joanna", null); // Polly narrator default
         }
-    String normalized = AudioCache.normalizeText(text);
-    String cacheKey = cacheKey("narrator", sel, normalized);
+        String normalized = AudioCache.normalizeText(text);
+        String cacheKey = cacheKey("narrator", sel, normalized);
         if (!shouldPlay(cacheKey)) return;
-    byte[] audio = getOrSynthesize(cacheKey, sel, normalized);
-        playAudio(audio);
+        submitSynthesisAndPlay(cacheKey, sel, normalized);
     }
 
     public void speakPlayer(String text) throws Exception {
@@ -144,12 +118,11 @@ public class VoiceRuntime {
                 System.out.println("TTS Player ElevenLabs: using voice '" + v + "'");
             }
         }
-    VoiceSelection sel = VoiceSelection.of(v, null);
-    String normalized = AudioCache.normalizeText(text);
-    String cacheKey = cacheKey("player", sel, normalized);
+        VoiceSelection sel = VoiceSelection.of(v, null);
+        String normalized = AudioCache.normalizeText(text);
+        String cacheKey = cacheKey("player", sel, normalized);
         if (!shouldPlay(cacheKey)) return;
-    byte[] audio = getOrSynthesize(cacheKey, sel, normalized);
-        playAudio(audio);
+        submitSynthesisAndPlay(cacheKey, sel, normalized);
     }
 
     private boolean shouldPlay(String key) {
@@ -162,21 +135,57 @@ public class VoiceRuntime {
         return true;
     }
 
-    private byte[] getOrSynthesize(String key, VoiceSelection sel, String normalizedText) throws Exception {
-        if (cache != null) {
-            byte[] hitWav = cache.get(key, "wav");
-            if (hitWav != null) return hitWav;
-            byte[] hitMp3 = cache.get(key, "mp3");
-            if (hitMp3 != null) return hitMp3;
-        }
-    byte[] data = tts.synthesize(normalizedText, sel);
-        usage.addCharacters(normalizedText.length());
-        if (cache != null) {
-            if (looksRiffWav(data)) cache.put(key, "wav", data);
-            else if (looksMp3(data)) cache.put(key, "mp3", data);
-            else cache.put(key, "bin", data);
-        }
-        return data;
+    private void submitSynthesisAndPlay(String key, VoiceSelection sel, String normalizedText) {
+        // 1) Try cache synchronously
+        try {
+            if (cache != null) {
+                byte[] hitWav = cache.get(key, "wav");
+                if (hitWav != null) { playAudio(hitWav); return; }
+                byte[] hitMp3 = cache.get(key, "mp3");
+                if (hitMp3 != null) { playAudio(hitMp3); return; }
+            }
+        } catch (Exception ignored) {}
+        // 2) Synthesize asynchronously
+        tts.synthesizeAsync(normalizedText, sel)
+            .thenAccept(audio -> {
+                try {
+                    if (audio != null) {
+                        usage.addCharacters(normalizedText.length());
+                        if (cache != null) {
+                            try {
+                                if (looksRiffWav(audio)) cache.put(key, "wav", audio);
+                                else if (looksMp3(audio)) cache.put(key, "mp3", audio);
+                                else cache.put(key, "bin", audio);
+                            } catch (Exception ignored) {}
+                        }
+                        playAudio(audio);
+                    }
+                } catch (Exception ignored) {}
+            })
+            .exceptionally(ex -> {
+                String msg = ex.getMessage() == null ? "" : ex.getMessage();
+                if (msg.contains("Azure TTS error 400")) {
+                    // Retry with a safe fallback voice
+                    boolean female = normalizedText != null && normalizedText.toLowerCase().contains("she ");
+                    String fallbackVoice = female ? "en-US-JennyNeural" : "en-US-GuyNeural";
+                    VoiceSelection fbSel = VoiceSelection.of(fallbackVoice, sel.style);
+                    tts.synthesizeAsync(normalizedText, fbSel).thenAccept(audio -> {
+                        try {
+                            if (audio != null) {
+                                if (cache != null) {
+                                    try {
+                                        if (looksRiffWav(audio)) cache.put(key, "wav", audio);
+                                        else if (looksMp3(audio)) cache.put(key, "mp3", audio);
+                                        else cache.put(key, "bin", audio);
+                                    } catch (Exception ignored) {}
+                                }
+                                playAudio(audio);
+                            }
+                        } catch (Exception ignored) {}
+                    });
+                }
+                return null;
+            });
     }
 
     private static boolean looksRiffWav(byte[] data) {

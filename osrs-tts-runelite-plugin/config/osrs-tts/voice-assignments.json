@@ -6,5 +6,141 @@
     "assignedAtEpochMs" : 1757128525963,
     "assignedBy" : "auto",
     "primaryTag" : "elder"
+  },
+  "hell-kitten" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Bella (EXAVITQu4vr4xnSDxMaL)",
+    "voiceLabel" : "Bella (EXAVITQu4vr4xnSDxMaL)",
+    "assignedAtEpochMs" : 1757638376340,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "master farmer" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Elli (MF3mGyEYCl7XYWbV9V6O)",
+    "voiceLabel" : "Elli (MF3mGyEYCl7XYWbV9V6O)",
+    "assignedAtEpochMs" : 1757638983607,
+    "assignedBy" : "auto",
+    "primaryTag" : "farmer"
+  },
+  "kitten" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Josh (TxGEqnHWrfWFTfGW9XjX)",
+    "voiceLabel" : "Josh (TxGEqnHWrfWFTfGW9XjX)",
+    "assignedAtEpochMs" : 1757639310145,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "npc" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Domi (AZnzlk1XvdvUeBnXmlld)",
+    "voiceLabel" : "Domi (AZnzlk1XvdvUeBnXmlld)",
+    "assignedAtEpochMs" : 1757705343195,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "lyra" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Bella (EXAVITQu4vr4xnSDxMaL)",
+    "voiceLabel" : "Bella (EXAVITQu4vr4xnSDxMaL)",
+    "assignedAtEpochMs" : 1757709778372,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "kragen" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Dorothy (ThT5KcBeYPX3keUQqHPh)",
+    "voiceLabel" : "Dorothy (ThT5KcBeYPX3keUQqHPh)",
+    "assignedAtEpochMs" : 1757729862305,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "dantaera" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Bella (EXAVITQu4vr4xnSDxMaL)",
+    "voiceLabel" : "Bella (EXAVITQu4vr4xnSDxMaL)",
+    "assignedAtEpochMs" : 1757730212144,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "bernald" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Josh (TxGEqnHWrfWFTfGW9XjX)",
+    "voiceLabel" : "Josh (TxGEqnHWrfWFTfGW9XjX)",
+    "assignedAtEpochMs" : 1757731049208,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "alain" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Bella (EXAVITQu4vr4xnSDxMaL)",
+    "voiceLabel" : "Bella (EXAVITQu4vr4xnSDxMaL)",
+    "assignedAtEpochMs" : 1757731208246,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "tool leprechaun" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Dorothy (ThT5KcBeYPX3keUQqHPh)",
+    "voiceLabel" : "Dorothy (ThT5KcBeYPX3keUQqHPh)",
+    "assignedAtEpochMs" : 1757731522664,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "queen ellamaria" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Glinda (z9fAnlkpzviPz146aGWa)",
+    "voiceLabel" : "Glinda (z9fAnlkpzviPz146aGWa)",
+    "assignedAtEpochMs" : 1757735866785,
+    "assignedBy" : "auto",
+    "primaryTag" : "royalty"
+  },
+  "king roald" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "George (JBFqnCBsd6RMkjVDRZzb)",
+    "voiceLabel" : "George (JBFqnCBsd6RMkjVDRZzb)",
+    "assignedAtEpochMs" : 1757737042873,
+    "assignedBy" : "auto",
+    "primaryTag" : "royalty"
+  },
+  "noah" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Sam (yoZ06aMxZJJ28mfd3POQ)",
+    "voiceLabel" : "Sam (yoZ06aMxZJJ28mfd3POQ)",
+    "assignedAtEpochMs" : 1757780326971,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "sergeant tobyn" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "en-GB-OwenNeural",
+    "voiceLabel" : "en-GB-OwenNeural",
+    "assignedAtEpochMs" : 1757783875229,
+    "assignedBy" : "auto",
+    "primaryTag" : "citizen"
+  },
+  "guard" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Sam (yoZ06aMxZJJ28mfd3POQ)",
+    "voiceLabel" : "Sam (yoZ06aMxZJJ28mfd3POQ)",
+    "assignedAtEpochMs" : 1757780449965,
+    "assignedBy" : "auto",
+    "primaryTag" : "guard"
+  },
+  "bandit" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Arnold (VR6AewLTigWG4xSOukaG)",
+    "voiceLabel" : "Arnold (VR6AewLTigWG4xSOukaG)",
+    "assignedAtEpochMs" : 1757780646787,
+    "assignedBy" : "auto",
+    "primaryTag" : "bandit"
+  },
+  "prince itzla arkan" : {
+    "provider" : "ElevenLabs",
+    "voiceId" : "Hiel (i3jmyqAiMz1kG1rQEOGK)",
+    "voiceLabel" : "Hiel (i3jmyqAiMz1kG1rQEOGK)",
+    "assignedAtEpochMs" : 1757783853629,
+    "assignedBy" : "auto",
+    "primaryTag" : "royalty"
   }
 }

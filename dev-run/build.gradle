@@ -10,7 +10,7 @@ repositories {
 
 dependencies {
     // Match the RuneLite client version used by the plugin build to avoid class mismatches
-    implementation 'net.runelite:client:1.11.15'
+    implementation 'net.runelite:client:1.11.16'
     implementation project(':osrs-tts-runelite-plugin')
 }
 
@@ -19,7 +19,10 @@ application {
     applicationDefaultJvmArgs = [
             '-Duser.country=US',
             '-Duser.language=en',
-            '-Xmx1024m'
+            '-Xmx2048m',
+            '-Xms512m',
+            '-XX:+UseG1GC',
+            '-Dosrs.tts.debug=true'
             // Removed -Drunelite.plugin.class to avoid double-loading the plugin via forced class and classpath scanning
     ]
 }

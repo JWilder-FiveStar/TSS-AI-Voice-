@@ -66,6 +66,11 @@ tasks.named('jar') {
         exclude 'META-INF/*.RSA'
         exclude '**/module-info.class'
     }
+    // Bundle quest-voices JSON files into the jar so we can extract at runtime
+    from('quest-voices') {
+        into 'quest-voices'
+        include '**/*.json'
+    }
 }
 
 // Convenience alias (optional) if someone still wants to invoke fatJar explicitly
@@ -84,7 +89,7 @@ tasks.register('inspectPluginJar') {
         def zip = new java.util.zip.ZipFile(jarFile)
         def hits = []
         zip.entries().each { e ->
-            if (e.name.toLowerCase().contains('runelite-plugin.properties') || e.name.contains('OsrsTtsPlugin.class')) {
+            if (e.name.toLowerCase().contains('runelite-plugin.properties') || e.name.contains('OsrsTtsPlugin.class') || e.name.startsWith('quest-voices/')) {
                 hits << e.name
             }
         }
@@ -104,5 +109,5 @@ tasks.register('runPlugin', JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
     // Force RuneLite to use your real userhome so credentials.properties is picked up
     def userHome = System.getProperty('user.home').replace('\\', '/')
-    jvmArgs '-ea', '-Duser.country=US', '-Duser.language=en', '-Xmx1024m', "-Drunelite.userhome=${userHome}/.runelite", '-Dosrs.tts.debug=true'
+    jvmArgs '-ea', '-Duser.country=US', '-Duser.language=en', '-Xmx2048m', '-Xms512m', '-XX:+UseG1GC', "-Drunelite.userhome=${userHome}/.runelite", '-Dosrs.tts.debug=true'
 }

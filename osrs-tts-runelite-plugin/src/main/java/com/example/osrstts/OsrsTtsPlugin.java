@@ -26,6 +26,9 @@ import javax.swing.SwingUtilities;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Locale;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @PluginDescriptor(
         name = "Old School RuneScape TTS",
@@ -51,6 +54,32 @@ public class OsrsTtsPlugin extends Plugin {
     private final java.util.Map<Integer, String> npcOverheadHash = new java.util.HashMap<>();
     private final java.util.Map<Integer, String> playerOverheadHash = new java.util.HashMap<>();
 
+    // Dialog continuation tracking
+    private String lastIncompleteDialog = null;
+    private String lastDialogSpeaker = null;
+    private long lastDialogTime = 0;
+    private static final long DIALOG_CONTINUATION_TIMEOUT_MS = 4500; // was 2700ms, allow more time to finish
+
+    // Track when complete dialog has been spoken to prevent duplicates
+    private volatile boolean completeDialogSpoken = false;
+    private String lastCompleteDialogKey = null;
+
+    // Add timeout cancellation mechanism
+    private volatile boolean cancelIncompleteTimeout = false;
+    private String incompleteDialogKey = null;
+
+    // Grace window to accept widget completion after timeout fired
+    private String lastTimedOutDialogText = null;
+    private String lastTimedOutSpeaker = null;
+    private long lastTimedOutAtMs = 0L;
+    private static final long TIMEOUT_COMPLETION_GRACE_MS = 6000; // was 3500ms
+
+    // Background scheduler for non-blocking delays
+    private ScheduledExecutorService ttsScheduler;
+
+    // Track recent dialog widget activity to gate chat/narration during cutscenes
+    private volatile long lastDialogWidgetAtMs = 0L;
+
     private static final String DEBUG_PROP = "osrs.tts.debug";
 
     @Provides
@@ -62,6 +91,17 @@ public class OsrsTtsPlugin extends Plugin {
         config = new OsrsTtsConfig();
         syncConfigFromRuneLite();
         rebuildRuntime("startup");
+
+        // Set up dialog completion/suppression callback for NarrationDetector
+        narrationDetector.setDialogCompletionCallback(this::onNarrationDialogFoundCallback);
+
+        // Single-threaded scheduler for delayed tasks (non-blocking)
+        ttsScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "osrs-tts-scheduler");
+            t.setDaemon(true);
+            return t;
+        });
+
         SwingUtilities.invokeLater(this::addSidebar);
     }
 
@@ -89,6 +129,10 @@ public class OsrsTtsPlugin extends Plugin {
         navButton = null;
         panel = null;
         voiceRuntime = null;
+        if (ttsScheduler != null) {
+            try { ttsScheduler.shutdownNow(); } catch (Exception ignored) {}
+            ttsScheduler = null;
+        }
     }
 
     private void syncConfigFromRuneLite() {
@@ -142,22 +186,75 @@ public class OsrsTtsPlugin extends Plugin {
     public void onWidgetLoaded(WidgetLoaded event) {
         if (voiceRuntime == null || config == null) return;
         boolean debug = isDebug();
+
+        // FULL DEBUG LOGGING for widget events
+        if (debug) {
+            log.info("=== WIDGET LOADED DEBUG ===");
+            log.info("GroupId: {}", event.getGroupId());
+            log.info("Widget group loaded - checking for quest dialogs");
+        }
+
         try {
             narrationDetector.setLastLoadedGroupId(event.getGroupId());
+
+            // Stamp dialog activity when dialog groups appear
+            int gId = event.getGroupId();
+            boolean isDialogGroup = false;
+            try {
+                isDialogGroup = gId == net.runelite.api.widgets.WidgetID.DIALOG_NPC_GROUP_ID
+                        || gId == net.runelite.api.widgets.WidgetID.DIALOG_PLAYER_GROUP_ID
+                        || gId == net.runelite.api.widgets.WidgetID.DIALOG_OPTION_GROUP_ID
+                        || gId == net.runelite.api.widgets.WidgetID.CHATBOX_GROUP_ID;
+            } catch (Throwable t) {
+                isDialogGroup = gId == 231 || gId == 217 || gId == 219 || gId == 162;
+            }
+            if (isDialogGroup) {
+                lastDialogWidgetAtMs = System.currentTimeMillis();
+            }
+
+            // Check if we have an incomplete dialog pending and this widget might contain the full text
+            if (lastIncompleteDialog != null && debug) {
+                log.info("CHECKING WIDGET for incomplete dialog completion - Speaker: '{}' , Incomplete: '{}'",
+                    lastDialogSpeaker, lastIncompleteDialog);
+            }
+
             narrationDetector.maybeNarrateOpenText(client, config, voiceRuntime);
             int g = event.getGroupId();
-            if (g == 160 || g == 193 || g == 229 ||
+
+            if (debug) {
+                log.info("Checking widget group {} against known quest/dialog groups", g);
+            }
+
+            // Enhanced quest/dialog group detection - add more widget groups
+            if (g == 160 || g == 193 || g == 229 || g == 217 || g == 231 ||  // Add the groups we're seeing
                 g == net.runelite.api.widgets.WidgetID.COLLECTION_LOG_ID ||
                 g == net.runelite.api.widgets.WidgetID.ADVENTURE_LOG_ID ||
                 g == net.runelite.api.widgets.WidgetID.KILL_LOGS_GROUP_ID ||
                 g == net.runelite.api.widgets.WidgetID.GENERIC_SCROLL_GROUP_ID) { // known quest / dialog / log groups
+
+                if (debug) {
+                    log.info("Widget group {} matches quest/dialog pattern - scheduling delayed scans", g);
+                }
+
                 scheduleDelayedScan(100, g, debug);
                 scheduleDelayedScan(250, g, debug);
                 scheduleDelayedScan(500, g, debug);
+                scheduleDelayedScan(800, g, debug);   // extra scans to catch late-populating text
+                scheduleDelayedScan(1200, g, debug);
+
+                // If we have incomplete dialog, try to extract full text from widget immediately
+                if (lastIncompleteDialog != null) {
+                    scheduleDialogCompletionCheck(50, debug);
+                    scheduleDialogCompletionCheck(400, debug);
+                }
+            } else if (debug) {
+                log.info("Widget group {} does not match quest/dialog pattern - no delayed scans", g);
             }
         } catch (Exception e) {
-            if (debug) log.debug("WidgetLoaded error: {}", e.getMessage());
+            if (debug) log.error("WidgetLoaded error: {}", e.getMessage(), e);
         }
+
+        if (debug) log.info("=== END WIDGET LOADED DEBUG ===");
     }
 
     private void scheduleDelayedScan(int delayMs, int groupId, boolean debug) {
@@ -179,60 +276,286 @@ public class OsrsTtsPlugin extends Plugin {
         }
     }
 
+    private void scheduleDialogCompletionCheck(int delayMs, boolean debug) {
+        final long start = System.currentTimeMillis();
+        try {
+            clientThread.invokeLater(() -> {
+                if (System.currentTimeMillis() - start < delayMs) return false;
+                try {
+                    if (lastIncompleteDialog != null && voiceRuntime != null) {
+                        if (debug) {
+                            log.info("DIALOG COMPLETION CHECK - Attempting to extract full text from widgets");
+                        }
+
+                        // Try to force narration detection to get full text from current widgets
+                        narrationDetector.forceNextScan();
+
+                        // The NarrationDetector might have the full text - let's check if it would speak something
+                        // that contains our incomplete dialog as a substring
+                        if (debug) {
+                            log.info("DIALOG COMPLETION CHECK - Forced narration scan completed");
+                        }
+                    }
+                } catch (Exception e) {
+                    if (debug) log.error("Dialog completion check failed: {}", e.getMessage());
+                }
+                return true;
+            });
+        } catch (Exception e) {
+            if (debug) log.debug("scheduleDialogCompletionCheck failed {}ms: {}", delayMs, e.getMessage());
+        }
+    }
+
     @Subscribe
     public void onChatMessage(ChatMessage evt) {
         if (voiceRuntime == null || config == null || evt == null) return;
         boolean debug = isDebug();
+
+        // ENHANCED DEBUG LOGGING - Log all incoming chat messages with length info
+        if (debug) {
+            log.info("=== CHAT MESSAGE DEBUG ===");
+            log.info("Type: {}", evt.getType());
+            log.info("Name/Speaker: '{}'", evt.getName());
+            log.info("Raw Message: '{}'", evt.getMessage());
+            log.info("Raw Message Length: {}", evt.getMessage() != null ? evt.getMessage().length() : 0);
+            log.info("Timestamp: {}", evt.getTimestamp());
+
+            // Check for message fragmentation indicators
+            String raw = evt.getMessage();
+            if (raw != null) {
+                boolean endsAbruptly = !raw.endsWith(".") && !raw.endsWith("!") && !raw.endsWith("?") && !raw.endsWith("...") && raw.length() > 20;
+                log.info("Message appears incomplete (no proper ending): {}", endsAbruptly);
+                if (raw.contains("|")) {
+                    String[] parts = raw.split("\\|", -1); // -1 to include empty strings
+                    log.info("Message parts count: {}", parts.length);
+                    for (int i = 0; i < parts.length; i++) {
+                        log.info("Part {}: '{}'", i, parts[i]);
+                    }
+                }
+            }
+        }
+
         try {
             ChatMessageType type = evt.getType();
             String typeName = type != null ? type.name() : "";
             String raw = evt.getMessage();
             String msg = stripTags(raw);
-            if (msg.isBlank()) return;
+
+            if (debug) {
+                log.info("Processed message after tag stripping: '{}'", msg);
+                log.info("Processed message length: {}", msg.length());
+            }
+
+            if (msg.isBlank()) {
+                if (debug) log.info("Message blank after stripping tags - skipping");
+                return;
+            }
 
             if ("DIALOG".equalsIgnoreCase(typeName)) {
+                if (debug) log.info("Processing DIALOG message");
                 String[] parts = raw.split("\\|", 2);
                 if (parts.length == 2) {
                     String spk = sanitizeName(parts[0].replace('_',' '));
                     String text = stripTags(parts[1]).trim();
-                    if (!text.isEmpty()) {
+                    long currentTime = System.currentTimeMillis();
+
+                    if (debug) {
+                        log.info("DIALOG - Speaker: '{}', Text: '{}'", spk, text);
+                        log.info("DIALOG - Text Length: {}, Ends with punctuation: {}",
+                            text.length(),
+                            text.endsWith(".") || text.endsWith("!") || text.endsWith("?") || text.endsWith("..."));
+
+                        // Check for common truncation patterns
+                        if (text.length() > 0 && !text.matches(".*[.!?]\\s*$") && text.length() > 50) {
+                            log.warn("POTENTIAL TRUNCATION DETECTED - Dialog text may be incomplete!");
+                        }
+                    }
+
+                    // Check if this might be a continuation of a previous incomplete dialog
+                    boolean isIncomplete = text.length() > 50 && !text.matches(".*[.!?]\\s*$");
+                    boolean isContinuation = lastIncompleteDialog != null &&
+                                           spk.equalsIgnoreCase(lastDialogSpeaker) &&
+                                           (currentTime - lastDialogTime) < DIALOG_CONTINUATION_TIMEOUT_MS;
+
+                    if (debug) {
+                        log.info("DIALOG ANALYSIS - IsIncomplete: {}, IsContinuation: {}", isIncomplete, isContinuation);
+                        if (lastIncompleteDialog != null) {
+                            log.info("PREVIOUS INCOMPLETE - Speaker: '{}', Time diff: {}ms",
+                                lastDialogSpeaker, currentTime - lastDialogTime);
+                        }
+                    }
+
+                    String finalText = text;
+
+                    if (isContinuation) {
+                        // This appears to be a continuation of the previous dialog
+                        finalText = lastIncompleteDialog + " " + text;
+                        if (debug) {
+                            log.info("CONCATENATED DIALOG - Combined text: '{}'", finalText);
+                            log.info("CONCATENATED DIALOG - Combined length: {}", finalText.length());
+                        }
+                        // Clear the incomplete dialog since we're processing it
+                        lastIncompleteDialog = null;
+                        lastDialogSpeaker = null;
+                        lastDialogTime = 0;
+                    }
+
+                    if (isIncomplete && !isContinuation) {
+                        // This dialog appears incomplete, store it for potential continuation
+                        lastIncompleteDialog = text;
+                        lastDialogSpeaker = spk;
+                        lastDialogTime = currentTime;
+                        incompleteDialogKey = spk + "|" + text.hashCode();
+                        cancelIncompleteTimeout = false;
+
+                        if (debug) {
+                            log.info("STORING INCOMPLETE DIALOG for potential continuation - Key: {}", incompleteDialogKey);
+                        }
+
+                        // Don't speak yet - wait for potential continuation
+                        // Schedule a delayed task (off the client thread) to speak it if no continuation comes
+                        if (ttsScheduler != null) {
+                            final String pendingSpeaker = spk;
+                            final String pendingText = text;
+                            ttsScheduler.schedule(() -> {
+                                // Post back to the client thread for safe client/widget access
+                                clientThread.invoke(() -> {
+                                    try {
+                                        // Try a final widget scan just before speaking
+                                        try {
+                                            narrationDetector.forceNextScan();
+                                            narrationDetector.maybeNarrateOpenText(client, config, voiceRuntime);
+                                        } catch (Exception ignored) {}
+
+                                        // Check if still pending and not cancelled
+                                        if (!cancelIncompleteTimeout &&
+                                            lastIncompleteDialog != null &&
+                                            lastIncompleteDialog.equals(pendingText) &&
+                                            pendingSpeaker.equalsIgnoreCase(lastDialogSpeaker)) {
+
+                                            if (debug) {
+                                                log.info("TIMEOUT - Speaking incomplete dialog as-is: '{}'", pendingText);
+                                            }
+
+                                            String self = localPlayerName();
+                                            if (self != null && pendingSpeaker.equalsIgnoreCase(self)) {
+                                                voiceRuntime.speakPlayer(pendingText);
+                                            } else {
+                                                voiceRuntime.speakNpc(pendingSpeaker.isEmpty()?"NPC":pendingSpeaker, pendingText, voiceRuntime.inferTags(pendingSpeaker));
+                                            }
+
+                                            // Record timed-out dialog for grace completion by widget
+                                            lastTimedOutDialogText = pendingText;
+                                            lastTimedOutSpeaker = pendingSpeaker;
+                                            lastTimedOutAtMs = System.currentTimeMillis();
+
+                                            // Clear the stored dialog
+                                            lastIncompleteDialog = null;
+                                            lastDialogSpeaker = null;
+                                            lastDialogTime = 0;
+                                            incompleteDialogKey = null;
+                                        } else if (debug) {
+                                            log.info("TIMEOUT CANCELLED - Dialog completion found via widget scan");
+                                        }
+                                    } catch (Exception e) {
+                                        if (debug) log.error("Error in delayed dialog processing: {}", e.getMessage());
+                                    }
+                                });
+                            }, DIALOG_CONTINUATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                        }
+
+                        return; // Don't process this dialog immediately
+                    }
+
+                    if (!finalText.isEmpty()) {
+                        // Create dialog key for duplicate prevention
+                        String dialogKey = spk + "|" + finalText.hashCode();
+
+                        // Check if we already spoke this complete dialog
+                        if (dialogKey.equals(lastCompleteDialogKey)) {
+                            if (debug) {
+                                log.info("DUPLICATE DIALOG DETECTED - Skipping: '{}'", finalText);
+                            }
+                            return;
+                        }
+
+                        lastCompleteDialogKey = dialogKey;
+
                         String self = localPlayerName();
-                        if (self != null && spk.equalsIgnoreCase(self)) voiceRuntime.speakPlayer(text);
-                        else voiceRuntime.speakNpc(spk.isEmpty()?"NPC":spk, text, voiceRuntime.inferTags(spk));
+                        if (self != null && spk.equalsIgnoreCase(self)) {
+                            if (debug) log.info("Speaking as PLAYER: '{}'", finalText);
+                            voiceRuntime.speakPlayer(finalText);
+                        } else {
+                            if (debug) log.info("Speaking as NPC '{}': '{}'", spk, finalText);
+                            voiceRuntime.speakNpc(spk.isEmpty()?"NPC":spk, finalText, voiceRuntime.inferTags(spk));
+                        }
                         return;
+                    }
+                } else if (debug) {
+                    log.info("DIALOG message does not contain expected '|' separator. Parts: {}", parts.length);
+                    for (int i = 0; i < parts.length; i++) {
+                        log.info("Dialog part {}: '{}'", i, parts[i]);
                     }
                 }
             }
 
             String tU = typeName.toUpperCase(Locale.ROOT);
-            if (tU.contains("GAME") || tU.contains("SPAM") || tU.contains("ENGINE") || tU.contains("BROADCAST")) return;
+            if (tU.contains("GAME") || tU.contains("SPAM") || tU.contains("ENGINE") || tU.contains("BROADCAST")) {
+                if (debug) log.info("Skipping message type: {}", tU);
+                return;
+            }
+
             String speaker = sanitizeName(evt.getName());
             String self = localPlayerName();
             boolean playerChan = tU.contains("PUBLIC") || tU.contains("FRIEND") || tU.contains("CLAN") || tU.contains("PRIVATE") || tU.contains("AUTOTYPER");
             boolean npcChan = tU.contains("NPC");
 
+            if (debug) {
+                log.info("Channel Analysis - Type: {}, PlayerChan: {}, NpcChan: {}, Speaker: '{}'", tU, playerChan, npcChan, speaker);
+            }
+
+            // Gate reading of self public chat behind property and avoid during active dialog widgets
+            boolean readPlayerPublic = "true".equalsIgnoreCase(System.getProperty("osrs.tts.readPlayerPublicChat", "false"));
+            long sinceDialogMs = System.currentTimeMillis() - lastDialogWidgetAtMs;
+            boolean dialogActive = sinceDialogMs >= 0 && sinceDialogMs < 2500;
+
             if (self != null && speaker.equalsIgnoreCase(self) && playerChan) {
+                boolean isPublic = tU.contains("PUBLIC");
+                if (isPublic && (!readPlayerPublic || dialogActive)) {
+                    if (debug) log.info("Suppressing self PUBLIC chat (readPlayerPublic={}, dialogActive={})", readPlayerPublic, dialogActive);
+                    return;
+                }
+                if (debug) log.info("Speaking as SELF/PLAYER: '{}'", msg);
                 voiceRuntime.speakPlayer(msg);
                 return;
             }
             if (npcChan && !speaker.isBlank()) {
+                if (debug) log.info("Speaking as NPC '{}' (NPC channel): '{}'", speaker, msg);
                 voiceRuntime.speakNpc(speaker, msg, voiceRuntime.inferTags(speaker));
                 return;
             }
             if (!speaker.isBlank() && !playerChan) {
+                if (debug) log.info("Speaking as NPC '{}' (other channel): '{}'", speaker, msg);
                 voiceRuntime.speakNpc(speaker, msg, voiceRuntime.inferTags(speaker));
             }
         } catch (Exception e) {
-            if (debug) log.debug("Chat handling error: {}", e.getMessage());
+            if (isDebug()) log.error("Chat handling error: {}", e.getMessage(), e);
         }
+
+        if (debug) log.info("=== END CHAT MESSAGE DEBUG ===");
     }
 
     @Subscribe
     public void onGameTick(GameTick tick) {
         if (voiceRuntime == null || config == null || client == null) return;
     // Legacy master toggle still honored; then granular toggles decide which categories run
-	if (!config.isOverheadEnabled()) return;
+	if (!config.isOverheadEnabled()) {
+            if (isDebug()) log.info("Overhead processing skipped - master toggle disabled");
+            return;
+        }
         try {
+            // NPC overhead TTS disabled as requested
+            /*
             if (config.isNpcOverheadEnabled()) {
                 for (NPC npc : client.getNpcs()) {
                     if (npc == null) continue;
@@ -250,6 +573,8 @@ public class OsrsTtsPlugin extends Plugin {
                     voiceRuntime.speakNpc(name, clean, voiceRuntime.inferTags(name));
                 }
             }
+            */
+
             if (config.isPlayerOverheadEnabled()) {
                 for (Player p : client.getPlayers()) {
                     if (p == null) continue;
@@ -296,6 +621,107 @@ public class OsrsTtsPlugin extends Plugin {
                 voiceRuntime.speakPlayer("This is a player voice test.");
             } catch (Exception e) { log.warn("testPlayerVoice failed: {}", e.getMessage()); }
         });
+    }
+
+    // Decide if NarrationDetector should speak a dialog it found in widgets.
+    // Return true to allow widget speech, false to suppress (chat already handled it).
+    private boolean onNarrationDialogFoundCallback(String speaker, String text) {
+        boolean debug = isDebug();
+        String spk = sanitizeName(speaker);
+        String dialogKey = spk + "|" + text.hashCode();
+
+        // If chat already spoke this complete line, suppress widget speech
+        if (dialogKey.equals(lastCompleteDialogKey)) {
+            if (debug) log.info("Widget dialog duplicate - suppressed: '{}'", dialogKey);
+            return false;
+        }
+
+        long now = System.currentTimeMillis();
+
+        // If this widget text completes a previously stored incomplete chat dialog, allow widget to speak it
+        if (lastIncompleteDialog != null && lastDialogSpeaker != null && spk.equalsIgnoreCase(lastDialogSpeaker)) {
+            String normalizedNarration = normalizeForContain(text);
+            String normalizedIncomplete = normalizeForContain(lastIncompleteDialog);
+            boolean completes = containsEither(normalizedNarration, normalizedIncomplete);
+            if (!completes && normalizedIncomplete.length() > 30) {
+                int cut = Math.max(10, (int)(normalizedIncomplete.length() * 0.6));
+                String partial = normalizedIncomplete.substring(0, cut);
+                completes = containsEither(normalizedNarration, partial) || hasStrongCommonPrefix(normalizedNarration, normalizedIncomplete, 28);
+            }
+            if (completes) {
+                if (debug) {
+                    log.info("Widget dialog completes incomplete chat - allowing widget speech");
+                    log.info("  Incomplete: '{}'", lastIncompleteDialog);
+                    log.info("  Complete: '{}'", text);
+                }
+                cancelIncompleteTimeout = true;
+                lastIncompleteDialog = null;
+                lastDialogSpeaker = null;
+                lastDialogTime = 0;
+                incompleteDialogKey = null;
+                lastCompleteDialogKey = dialogKey;
+                return true;
+            }
+        }
+
+        // Grace: if timeout just spoke incomplete, and widget contains/extends it, allow widget speech
+        if (lastTimedOutDialogText != null && lastTimedOutSpeaker != null &&
+            spk.equalsIgnoreCase(lastTimedOutSpeaker) &&
+            (now - lastTimedOutAtMs) <= TIMEOUT_COMPLETION_GRACE_MS) {
+
+            String normalizedNarration = normalizeForContain(text);
+            String normalizedTimedOut = normalizeForContain(lastTimedOutDialogText);
+            boolean extendsTimedOut = containsEither(normalizedNarration, normalizedTimedOut);
+            if (!extendsTimedOut) {
+                // Accept strong common prefix match or significant length extension
+                extendsTimedOut = hasStrongCommonPrefix(normalizedNarration, normalizedTimedOut, 28);
+                if (!extendsTimedOut && normalizedNarration.length() > normalizedTimedOut.length() + 15) {
+                    int cut = Math.max(10, (int)(normalizedTimedOut.length() * 0.6));
+                    String partial = normalizedTimedOut.substring(0, Math.min(cut, normalizedTimedOut.length()));
+                    extendsTimedOut = containsEither(normalizedNarration, partial);
+                }
+            }
+            if (extendsTimedOut) {
+                if (debug) {
+                    log.info("Widget dialog extends recently timed-out chat - allowing widget speech (grace)");
+                    log.info("  TimedOut: '{}'", lastTimedOutDialogText);
+                    log.info("  Complete: '{}'", text);
+                }
+                lastCompleteDialogKey = dialogKey;
+                // Clear grace record
+                lastTimedOutDialogText = null;
+                lastTimedOutSpeaker = null;
+                lastTimedOutAtMs = 0L;
+                return true;
+            }
+        }
+
+        // Default: suppress widget speech; chat is the source of truth for dialog
+        if (debug) log.info("Widget dialog suppressed by default (no completion needed)");
+        return false;
+    }
+
+    private static boolean containsEither(String a, String b) {
+        if (a == null || b == null) return false;
+        return a.contains(b) || b.contains(a);
+    }
+
+    private static boolean hasStrongCommonPrefix(String a, String b, int minChars) {
+        if (a == null || b == null) return false;
+        int n = Math.min(a.length(), b.length());
+        int i = 0;
+        while (i < n && a.charAt(i) == b.charAt(i)) i++;
+        return i >= minChars;
+    }
+
+    private static String normalizeForContain(String s) {
+        if (s == null) return "";
+        String out = s.toLowerCase(Locale.ROOT);
+        out = out.replaceAll("<[^>]*>", ""); // strip tags defensively
+        out = out.replace('\u00A0', ' '); // nbsp to space
+        out = out.replaceAll("[^a-z0-9 ]+", " "); // remove punctuation/specials
+        out = out.replaceAll("\\s+", " ").trim();
+        return out;
     }
 
     private boolean isDebug() { return "true".equalsIgnoreCase(System.getProperty(DEBUG_PROP, "false")); }

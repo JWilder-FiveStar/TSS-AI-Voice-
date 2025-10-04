@@ -25,6 +25,19 @@ public class NarrationDetector {
     private String lastBookTitle = null;
     private String lastBookBody = null; // full accumulated body already narrated
     private long lastBookUpdateAt = 0L;
+
+    // Add callback interface for dialog completion detection
+    public interface DialogCompletionCallback {
+        boolean onDialogFound(String speaker, String text);
+    }
+
+    private DialogCompletionCallback dialogCallback = null;
+
+    // Add setter for the callback
+    public void setDialogCompletionCallback(DialogCompletionCallback callback) {
+        this.dialogCallback = callback;
+    }
+
     // Certain parchment style interfaces (reduced; removed 160 to avoid mass quest list narration)
     private static final int[] SPECIAL_QUEST_GROUPS = new int[] {193, 229};
     // Previously broad; now ordered with high-priority narration-rich groups first (drawn from RuneLite WidgetID)
@@ -39,17 +52,9 @@ public class NarrationDetector {
         WidgetID.COLLECTION_LOG_ID,              // collection log entries (narratable flavor text)
         WidgetID.ADVENTURE_LOG_ID,               // adventure log / account summary style text
         WidgetID.KILL_LOGS_GROUP_ID,             // boss / kill logs descriptive text
-        // (Quest list & diary summary intentionally excluded to avoid reading large lists)
-    WidgetID.LOGIN_CLICK_TO_PLAY_GROUP_ID,   // login welcome / MOTD
-        // Standard dialog / parchment groups we already cared about
-        160, 193, 229,
-        WidgetID.DIALOG_NPC_GROUP_ID,
-        WidgetID.DIALOG_PLAYER_GROUP_ID,
-        WidgetID.DIALOG_OPTION_GROUP_ID,
-        // Remaining broad sweep (subset trimmed to reduce overhead)
-        12, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
-        162, 163, 164, 165, 166, 167, 168, 169, 170,
-        548, 593, 230, 231, 232, 233
+        WidgetID.LOGIN_CLICK_TO_PLAY_GROUP_ID    // login welcome / MOTD (optional)
+        // Note: do NOT include broad UI container groups (12, 34-45, 162-170, 548, 593, 230-233)
+        // Dialog groups are handled by maybeSpeakDialogue() and should not be swept here.
     };
     // cursor removed
 
@@ -62,19 +67,28 @@ public class NarrationDetector {
      * can run immediately without waiting SCAN_COOLDOWN_MS. Safe because
      * duplicate suppression still handled by hash/content checks.
      */
-    public void forceNextScan() { /* no-op now */ }
+    public void forceNextScan() {
+        // Reset throttle so next maybeNarrateOpenText() will scan immediately
+        this.lastScanAt = 0L;
+    }
 
     public void maybeNarrateOpenText(Client client, OsrsTtsConfig cfg, VoiceRuntime runtime) {
         if (client == null || runtime == null || cfg == null) return;
 
-    long currentTime = System.currentTimeMillis();
-    long minInterval = getIntervalMs();
-    if (currentTime - lastScanAt < minInterval) return; // simple throttle
-    lastScanAt = currentTime;
-    if (DEBUG) log.info("TTS Narration scan start (interval={}ms)", minInterval);
+        long currentTime = System.currentTimeMillis();
+        long minInterval = getIntervalMs();
+        if (currentTime - lastScanAt < minInterval) return; // simple throttle
+        lastScanAt = currentTime;
+        if (DEBUG) log.info("TTS Narration scan start (interval={}ms)", minInterval);
 
-    // 1) Try NPC/Player dialogue widgets first (quest/dialogue boxes)
+        // 1) Try NPC/Player dialogue widgets first (quest/dialogue boxes)
         if (maybeSpeakDialogue(client, runtime)) {
+            return;
+        }
+
+        // If a dialog/cutscene group was the last to load, avoid narrating generic page text in this cycle
+        if (lastLoadedGroupId != null && isDialogGroupId(lastLoadedGroupId)) {
+            if (DEBUG) log.info("TTS NarrationDetector: dialog group active ({}), skipping narration fallback this cycle", lastLoadedGroupId);
             return;
         }
 
@@ -83,8 +97,8 @@ public class NarrationDetector {
         
         StringBuilder sb = new StringBuilder();
         int effectiveGroupUsed = -1;
-        // Prefer the most recently loaded widget group if any (but skip chat windows)
-        if (lastLoadedGroupId != null && lastLoadedGroupId != 270) {
+        // Prefer the most recently loaded widget group only if it is a narrative group
+        if (lastLoadedGroupId != null && isNarrativeGroup(lastLoadedGroupId)) {
             Widget last = client.getWidget(lastLoadedGroupId, 0);
             if (last != null) {
                 collectVisibleText(last, sb);
@@ -92,7 +106,7 @@ public class NarrationDetector {
             }
         }
         
-        // Scan all groups each time (prioritized order). Stop once enough content accumulated.
+        // Scan all narrative groups each time (prioritized order). Stop once enough content accumulated.
         for (int groupId : SCAN_GROUPS) {
             if (groupId == WidgetID.LOGIN_CLICK_TO_PLAY_GROUP_ID && !cfg.isLoginNarrationEnabled()) continue;
             // Skip chat window - group 270 contains chat history which should be handled by chat message events
@@ -111,7 +125,7 @@ public class NarrationDetector {
                 }
             }
             if (sb.length() > before && effectiveGroupUsed == -1) effectiveGroupUsed = groupId;
-            if (sb.length() > 800) break; // increased from 220 to allow longer dialog
+            if (sb.length() > 10000) break; // increased to 10000 to handle very long books/scrolls
         }
         
         String text = sb.toString().trim();
@@ -158,8 +172,8 @@ public class NarrationDetector {
         }) { if (gid == effectiveGroupUsed) { forceByGroup = true; break; } }
     }
         // Heuristic skip: detect list-like or obvious UI panels to avoid mass reading
-    if (!narrateAll && (isListLike(text) || isNoisePanel(text, effectiveGroupUsed))) {
-            if (DEBUG) log.info("TTS NarrationDetector: noise/list content suppressed (group={} chars={} lines={})", effectiveGroupUsed, text.length(), text.split("\\n").length);
+        if (!narrateAll && (isListLike(text) || isNoisePanel(text, effectiveGroupUsed) || isChatLike(text))) {
+            if (DEBUG) log.info("TTS NarrationDetector: noise/list/chat content suppressed (group={} chars={} lines={})", effectiveGroupUsed, text.length(), text.split("\\n").length);
             return;
         }
 
@@ -172,6 +186,7 @@ public class NarrationDetector {
             }
             lastHash = hash;
             try {
+                // Start with a baseline toSpeak; diary preface may override below
                 String toSpeak = text.length() > 4000 ? text.substring(0, 4000) : text;
 
                 // Optional preface: "<Player> opens the <Title>. It reads: ..." for book / diary style content
@@ -217,87 +232,70 @@ public class NarrationDetector {
                                         lastBookBody = body;
                                         lastBookUpdateAt = System.currentTimeMillis();
                                     }
-                                    // Book context expiry: if no update for 90s, reset to allow fresh preface later
-                                    if (lastBookUpdateAt > 0 && System.currentTimeMillis() - lastBookUpdateAt > 90_000) {
-                                        lastBookTitle = null; lastBookBody = null; lastBookUpdateAt = 0L;
-                                    }
                                 }
                             }
                         }
                     } catch (Exception ignored) {}
                 }
-                if (DEBUG) {
-                    log.info("TTS NarrationDetector: NARRATION DETECTED group={} specialQuest={} forceByGroup={} - len={} lines={} preview='{}'",
-                        effectiveGroupUsed, isSpecialQuestGroup, forceByGroup, toSpeak.length(), toSpeak.split("\\n").length, toSpeak.substring(0, Math.min(100, toSpeak.length())));
-                    if (Boolean.parseBoolean(System.getProperty("osrs.tts.logFullNarration", "true"))) {
-                        // Log full content in chunks of 800 chars to avoid truncation
-                        String full = toSpeak;
-                        int idx = 0; int chunk = 800; int part = 1;
-                        while (idx < full.length()) {
-                            int end = Math.min(full.length(), idx + chunk);
-                            log.info("TTS NarrationDetector: FULL[{}] {}..{} -> {}", part++, idx, end, full.substring(idx, end));
-                            idx = end;
-                        }
-                    }
-                }
+
+                if (DEBUG) log.info("TTS NarrationDetector: speaking {} chars", toSpeak.length());
                 runtime.speakNarrator(toSpeak);
-            } catch (Exception ignored) {}
-    } else if (DEBUG && text.length() >= 20) {
-            log.info("TTS NarrationDetector: text found but not narration-worthy: '{}' (length: {})", 
-                text.substring(0, Math.min(50, text.length())), text.length());
+            } catch (Exception e) {
+                if (DEBUG) log.error("NarrationDetector speaking error: {}", e.getMessage());
+            }
         }
     }
 
-    /**
-     * Enhanced detection for narration-worthy content like books, journals, notes, clue scrolls
-     */
+    private static boolean isNarrativeGroup(int groupId) {
+        for (int g : SCAN_GROUPS) if (g == groupId) return true;
+        return false;
+    }
+
+    private static boolean isDialogGroupId(int groupId) {
+        try {
+            return groupId == net.runelite.api.widgets.WidgetID.DIALOG_NPC_GROUP_ID
+                || groupId == net.runelite.api.widgets.WidgetID.DIALOG_PLAYER_GROUP_ID
+                || groupId == net.runelite.api.widgets.WidgetID.DIALOG_OPTION_GROUP_ID
+                || groupId == net.runelite.api.widgets.WidgetID.CHATBOX_GROUP_ID;
+        } catch (Throwable t) {
+            return groupId == 231 || groupId == 217 || groupId == 219 || groupId == 162;
+        }
+    }
+
     private static boolean looksLikeNarrationContent(String text) {
         if (text == null || text.trim().isEmpty()) return false;
-        
-        String lower = text.toLowerCase();
-        
-        // Positive indicators for narration content
-        boolean hasNarrationKeywords = lower.contains("journal") || lower.contains("diary") || 
-                                      lower.contains("book") || lower.contains("note") || 
-                                      lower.contains("scroll") || lower.contains("clue") ||
-                                      lower.contains("letter") || lower.contains("document") ||
-                                      lower.contains("manuscript") || lower.contains("tome") ||
-                                      lower.contains("record") || lower.contains("log") ||
-                                      lower.contains("page") || lower.contains("chapter");
-        
-        // Characteristic patterns of readable content
-        boolean hasReadableContent = text.contains(".") || text.contains("!") || text.contains("?") ||
-                                   text.contains(":") || text.contains(";") ||
-                                   text.split("\\s+").length >= 5; // at least 5 words
-        
-        // Story-like content patterns
-        boolean hasStoryContent = lower.contains("the ") || lower.contains("and ") || 
-                                lower.contains("you ") || lower.contains("i ") ||
-                                lower.contains("he ") || lower.contains("she ") ||
-                                lower.contains("it ") || lower.contains("they ");
-        
-        // Avoid UI elements and short labels
-        boolean avoidUIElements = !lower.matches("^(ok|cancel|yes|no|close|back|next|continue|accept|decline)$") &&
-                                !lower.matches("^[0-9]+$") && // pure numbers
-                                !lower.matches("^[0-9]+\\s*(gp|coins?)$") && // money amounts
-                                text.length() >= 10; // minimum reasonable content length
-        
-        return avoidUIElements && (hasNarrationKeywords || (hasReadableContent && hasStoryContent));
+        String clean = text.trim();
+        // Basic heuristics for narrative content vs UI lists
+        if (clean.length() < 20) return false;
+        String[] lines = clean.split("\n+");
+        if (lines.length == 1) return clean.length() > 30; // single long line is probably narrative
+        // Multi-line: check for sentence structure vs list structure
+        int sentences = 0;
+        int shortLines = 0;
+        for (String line : lines) {
+            String l = line.trim();
+            if (l.isEmpty()) continue;
+            if (l.length() < 15) shortLines++;
+            if (l.matches(".*[.!?]\\s*$")) sentences++;
+        }
+        double sentenceRatio = sentences / (double) lines.length;
+        double shortRatio = shortLines / (double) lines.length;
+        return sentenceRatio > 0.3 && shortRatio < 0.7; // more sentences, fewer short lines
     }
 
     private static boolean isListLike(String text) {
-    if (text == null || text.isEmpty()) return false;
+        if (text == null || text.trim().isEmpty()) return false;
         String[] lines = text.split("\n+");
-        if (lines.length < 8) return false; // need enough lines to consider list
+        if (lines.length < 5) return false; // need multiple lines to be list-like
         int shortLines = 0;
-        int punct = 0;
         int singleWord = 0;
-        for (String l : lines) {
-            String s = l.trim();
-            if (s.isEmpty()) continue;
-            if (s.length() <= 24) shortLines++;
-            if (!s.contains(" ")) singleWord++;
-            if (s.matches(".*[.!?].*")) punct++;
+        int punct = 0;
+        for (String line : lines) {
+            String l = line.trim();
+            if (l.isEmpty()) continue;
+            if (l.length() < 20) shortLines++;
+            if (l.split("\\s+").length == 1) singleWord++;
+            if (l.matches(".*[.!?]\\s*$")) punct++;
         }
         int effective = 0; for (String l : lines) if (!l.trim().isEmpty()) effective++;
         if (effective == 0) return false;
@@ -311,18 +309,18 @@ public class NarrationDetector {
     private static boolean isNoisePanel(String text, int groupId) {
         if (text == null || text.isEmpty()) return false;
         String lower = text.toLowerCase();
-        
+
         // Explicit chat window group (should be handled by chat events, not narration)
         if (groupId == 270) return true;
-        
+
         // Skip quest list panels or filter/chat control clusters
         if (lower.contains("quest list") && text.split("\n").length > 30) return true;
-        
+
         // UI filter words cluster (chat channel toggles)
         String[] uiWords = {"game", "public", "private", "clan", "trade"};
         int hits = 0; for (String w : uiWords) if (lower.contains("\n"+w+"\n")) hits++;
         if (hits >= 3 && text.length() < 1200) return true;
-        
+
         // Chat-like content patterns (repetitive game messages)
         String[] lines = text.split("\n+");
         if (lines.length > 10) {
@@ -338,7 +336,7 @@ public class NarrationDetector {
             // If mostly repetitive game actions or chat timestamps, treat as noise
             if (attemptMessages > lines.length * 0.3 || catchMessages > 3) return true;
         }
-        
+
         // Large numeric-dense block
         int numeric = 0; int total = 0;
         for (String l : lines) {
@@ -347,6 +345,28 @@ public class NarrationDetector {
         }
         if (total > 20 && numeric > (total * 0.5)) return true;
         return false;
+    }
+
+    // Suppress regular chat/game logs: many second-person short lines like "You ..."
+    private static boolean isChatLike(String text) {
+        if (text == null || text.isEmpty()) return false;
+        String[] lines = text.split("\n+");
+        int effective = 0, youStarts = 0, shortLines = 0;
+        for (String line : lines) {
+            String l = line.trim();
+            if (l.isEmpty()) continue;
+            effective++;
+            if (l.length() < 90) shortLines++;
+            String lc = l.toLowerCase();
+            if (lc.startsWith("you ") || lc.startsWith("you\u00A0") || lc.startsWith("you\t") || lc.startsWith("your ") || lc.startsWith("you'")) {
+                youStarts++;
+            }
+        }
+        if (effective < 4) return false;
+        double youRatio = youStarts / (double) effective;
+        double shortRatio = shortLines / (double) effective;
+        // Treat as chat-like if most lines are short and many start with "You ..."
+        return shortRatio > 0.7 && youRatio > 0.4;
     }
 
     private static java.util.List<String> removePageNumberNoise(java.util.List<String> lines) {
@@ -399,9 +419,7 @@ public class NarrationDetector {
             String prop = System.getProperty("osrs.tts.narrationIntervalMs");
             if (prop != null && !prop.isBlank()) {
                 long v = Long.parseLong(prop.trim());
-                if (v < 50) return 50; // safety floor
-                if (v > 2000) return 2000; // safety cap
-                return v;
+                return Math.max(100, Math.min(5000, v)); // reasonable bounds
             }
         } catch (Exception ignored) {}
         return DEFAULT_INTERVAL;
@@ -411,17 +429,17 @@ public class NarrationDetector {
         int[] groups;
         try {
             groups = new int[] {
-                    WidgetID.DIALOG_NPC_GROUP_ID,
-                    WidgetID.DIALOG_PLAYER_GROUP_ID,
-                    WidgetID.DIALOG_OPTION_GROUP_ID,
-                    WidgetID.CHATBOX_GROUP_ID
+                    net.runelite.api.widgets.WidgetID.DIALOG_NPC_GROUP_ID,
+                    net.runelite.api.widgets.WidgetID.DIALOG_PLAYER_GROUP_ID,
+                    net.runelite.api.widgets.WidgetID.DIALOG_OPTION_GROUP_ID,
+                    net.runelite.api.widgets.WidgetID.CHATBOX_GROUP_ID
             };
         } catch (Throwable t) {
             groups = new int[] {231, 217, 219, 162};
         }
 
         for (int groupId : groups) {
-            Widget root = client.getWidget(groupId, 0);
+            net.runelite.api.widgets.Widget root = client.getWidget(groupId, 0);
             if (root == null || root.isHidden()) continue;
             List<String> lines = new ArrayList<>();
             collectVisibleLines(root, lines);
@@ -435,14 +453,36 @@ public class NarrationDetector {
             try {
                 if (groupId == safeDialogPlayerGroup()) {
                     String body = extractBody(lines);
+                    String speaker = "Player";
                     if (DEBUG) log.info("TTS NarrationDetector: player dialog {} chars", body.length());
+                    // Ask plugin if we should speak
+                    if (dialogCallback != null) {
+                        try {
+                            if (!dialogCallback.onDialogFound(speaker, body)) {
+                                if (DEBUG) log.info("NarrationDetector: dialog suppressed by callback (player)");
+                                lastHash = hash;
+                                return true;
+                            }
+                        } catch (Exception ignored) {}
+                    }
                     runtime.speakPlayer(body);
                 } else if (groupId == safeDialogNpcGroup()) {
                     String speaker = extractSpeaker(lines);
                     String body = extractBody(lines);
+                    if (speaker == null || speaker.isBlank()) speaker = "NPC";
                     if (DEBUG) log.info("TTS NarrationDetector: npc dialog speaker='{}' {} chars", speaker, body.length());
-                    java.util.Set<String> tags = runtime.inferTags(speaker != null ? speaker : "NPC");
-                    runtime.speakNpc(speaker != null ? speaker : "NPC", body, tags);
+                    // Ask plugin if we should speak
+                    if (dialogCallback != null) {
+                        try {
+                            if (!dialogCallback.onDialogFound(speaker, body)) {
+                                if (DEBUG) log.info("NarrationDetector: dialog suppressed by callback (npc)");
+                                lastHash = hash;
+                                return true;
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                    java.util.Set<String> tags = runtime.inferTags(speaker);
+                    runtime.speakNpc(speaker, body, tags);
                 } else if (groupId == safeDialogOptionGroup()) {
                     String prompt = extractPrompt(lines);
                     if (prompt != null && !prompt.isEmpty()) {
@@ -460,101 +500,156 @@ public class NarrationDetector {
     }
 
     private static int safeDialogNpcGroup() {
-        try { return WidgetID.DIALOG_NPC_GROUP_ID; } catch (Throwable t) { return 231; }
+        try { return net.runelite.api.widgets.WidgetID.DIALOG_NPC_GROUP_ID; } catch (Throwable t) { return 231; }
     }
 
     private static int safeDialogPlayerGroup() {
-        try { return WidgetID.DIALOG_PLAYER_GROUP_ID; } catch (Throwable t) { return 217; }
+        try { return net.runelite.api.widgets.WidgetID.DIALOG_PLAYER_GROUP_ID; } catch (Throwable t) { return 217; }
     }
 
     private static int safeDialogOptionGroup() {
-        try { return WidgetID.DIALOG_OPTION_GROUP_ID; } catch (Throwable t) { return 219; }
+        try { return net.runelite.api.widgets.WidgetID.DIALOG_OPTION_GROUP_ID; } catch (Throwable t) { return 219; }
     }
 
     private static String stripTags(String in) {
-        return in == null ? "" : in.replaceAll("<[^>]*>", "");
+        if (in == null) return "";
+        String s = in;
+        try {
+            s = s.replace('\u00A0', ' '); // nbsp to space
+            s = s.replaceAll("(?i)<br\\s*/?>", "\n"); // preserve visual line breaks
+            s = s.replaceAll("<[^>]*>", ""); // remove remaining tags
+            // Normalize whitespace but keep newlines for structure
+            s = s.replaceAll("[\\t\\x0B\\f\\r]", " ");
+            // Collapse multiple spaces
+            s = s.replaceAll(" {2,}", " ");
+            // Trim each line but keep line boundaries
+            String[] lines = s.split("\n");
+            StringBuilder out = new StringBuilder();
+            for (int i = 0; i < lines.length; i++) {
+                String ln = lines[i].trim();
+                if (!ln.isEmpty()) {
+                    out.append(ln);
+                    if (i < lines.length - 1) out.append('\n');
+                }
+            }
+            s = out.toString();
+        } catch (Exception ignored) {}
+        return s;
     }
 
     private static String sha1(String s) {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-1");
             byte[] dig = md.digest(s.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             StringBuilder hex = new StringBuilder(dig.length * 2);
-            for (byte b : dig) { hex.append(String.format("%02x", b)); }
+            for (byte b : dig) hex.append(String.format("%02x", b));
             return hex.toString();
         } catch (Exception e) {
             return Integer.toHexString(s.hashCode());
         }
     }
 
-    private static void collectVisibleText(Widget w, StringBuilder sb) {
+    private static void collectVisibleText(net.runelite.api.widgets.Widget w, StringBuilder sb) {
         if (w == null || w.isHidden()) return;
         String t = w.getText();
         if (t != null && !t.isEmpty()) {
             String s = stripTags(t).trim();
-            if (!s.isEmpty()) sb.append(s).append('\n');
+            if (!s.isEmpty()) {
+                // Split multi-line into separate lines to preserve spacing when joined later
+                String[] parts = s.split("\n+");
+                for (String p : parts) {
+                    String pp = p.trim();
+                    if (!pp.isEmpty()) sb.append(pp).append('\n');
+                }
+            }
         }
         // Traverse all child arrays: standard, static, dynamic.
-        Widget[] children = w.getChildren();
+        net.runelite.api.widgets.Widget[] children = w.getChildren();
         if (children != null) {
-            for (Widget c : children) collectVisibleText(c, sb);
+            for (net.runelite.api.widgets.Widget c : children) collectVisibleText(c, sb);
         }
-        try {
-            Widget[] dyn = w.getDynamicChildren();
-            if (dyn != null) for (Widget c : dyn) collectVisibleText(c, sb);
-        } catch (Throwable ignored) {}
-        try {
-            Widget[] stat = w.getStaticChildren();
-            if (stat != null) for (Widget c : stat) collectVisibleText(c, sb);
-        } catch (Throwable ignored) {}
+        net.runelite.api.widgets.Widget[] staticChildren = w.getStaticChildren();
+        if (staticChildren != null) {
+            for (net.runelite.api.widgets.Widget c : staticChildren) collectVisibleText(c, sb);
+        }
+        net.runelite.api.widgets.Widget[] dynamicChildren = w.getDynamicChildren();
+        if (dynamicChildren != null) {
+            for (net.runelite.api.widgets.Widget c : dynamicChildren) collectVisibleText(c, sb);
+        }
     }
 
-    private static void collectVisibleLines(Widget w, List<String> out) {
+    private static void collectVisibleLines(net.runelite.api.widgets.Widget w, List<String> lines) {
         if (w == null || w.isHidden()) return;
         String t = w.getText();
         if (t != null && !t.isEmpty()) {
             String s = stripTags(t).trim();
-            if (!s.isEmpty()) out.add(s);
+            if (!s.isEmpty()) {
+                String[] parts = s.split("\n+");
+                for (String p : parts) {
+                    String pp = p.trim();
+                    if (!pp.isEmpty()) lines.add(pp);
+                }
+            }
         }
-        Widget[] children = w.getChildren();
-        if (children != null) for (Widget c : children) collectVisibleLines(c, out);
-        try {
-            Widget[] dyn = w.getDynamicChildren();
-            if (dyn != null) for (Widget c : dyn) collectVisibleLines(c, out);
-        } catch (Throwable ignored) {}
-        try {
-            Widget[] stat = w.getStaticChildren();
-            if (stat != null) for (Widget c : stat) collectVisibleLines(c, out);
-        } catch (Throwable ignored) {}
+        net.runelite.api.widgets.Widget[] children = w.getChildren();
+        if (children != null) {
+            for (net.runelite.api.widgets.Widget c : children) collectVisibleLines(c, lines);
+        }
+        net.runelite.api.widgets.Widget[] staticChildren = w.getStaticChildren();
+        if (staticChildren != null) {
+            for (net.runelite.api.widgets.Widget c : staticChildren) collectVisibleLines(c, lines);
+        }
+        net.runelite.api.widgets.Widget[] dynamicChildren = w.getDynamicChildren();
+        if (dynamicChildren != null) {
+            for (net.runelite.api.widgets.Widget c : dynamicChildren) collectVisibleLines(c, lines);
+        }
     }
 
     private static String extractSpeaker(List<String> lines) {
         if (lines == null || lines.isEmpty()) return null;
         String first = lines.get(0).trim();
-        if (first.length() <= 24 && !first.matches(".*[.!?:].*")) return first;
+        // Heuristic: first line is the speaker if it’s short and not a sentence
+        if (!first.isEmpty()) {
+            boolean endsWithPunct = first.endsWith(".") || first.endsWith("!") || first.endsWith("?");
+            if (first.length() <= 32 && !endsWithPunct && !first.equalsIgnoreCase("click here to continue")) {
+                return first;
+            }
+        }
+        // Fallback: if second line exists and first line looks like a title, still use first
+        if (lines.size() > 1 && first.length() <= 40) return first;
         return null;
     }
 
     private static String extractBody(List<String> lines) {
-        if (lines == null || lines.isEmpty()) return "";
-        String speaker = extractSpeaker(lines);
-        List<String> slice = lines;
-        if (speaker != null && lines.size() >= 2) slice = lines.subList(1, lines.size());
-        return String.join("\n", slice).trim();
+        if (lines.isEmpty()) return "";
+        // Determine speaker using the same heuristic and skip that line from the body
+        String candidateSpeaker = extractSpeaker(lines);
+        int start = 0;
+        if (candidateSpeaker != null) {
+            // If the first line equals the detected speaker, skip it
+            if (!lines.isEmpty() && lines.get(0).trim().equalsIgnoreCase(candidateSpeaker.trim())) {
+                start = 1;
+            }
+        } else {
+            // Fallback: if the first line is short and not a sentence, treat as speaker
+            String first = lines.get(0).trim();
+            boolean endsWithPunct = first.endsWith(".") || first.endsWith("!") || first.endsWith("?");
+            if (!first.isEmpty() && first.length() <= 32 && !endsWithPunct && !first.equalsIgnoreCase("click here to continue")) {
+                start = 1;
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = start; i < lines.size(); i++) {
+            String line = lines.get(i).trim();
+            if (!line.isEmpty() && !line.equalsIgnoreCase("click here to continue")) {
+                if (sb.length() > 0) sb.append(" ");
+                sb.append(line);
+            }
+        }
+        return sb.toString().trim();
     }
 
     private static String extractPrompt(List<String> lines) {
-        // Find the first non-empty line that does not look like an enumerated option (e.g., "1.", "2.")
-        for (String l : lines) {
-            String s = l.trim();
-            if (s.isEmpty()) continue;
-            if (s.matches("^[0-9]+[).].*") || s.matches("^[→>-].*") || s.matches("^Option \\d+:.*")) {
-                continue;
-            }
-            // Avoid pure speaker line
-            if (s.length() <= 24 && !s.matches(".*[.!?:].*")) continue;
-            return s;
-        }
-        return null;
+        return extractBody(lines);
     }
 }

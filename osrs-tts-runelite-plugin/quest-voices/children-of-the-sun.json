@@ -1,0 +1,33 @@
+{
+  "npcExact": {
+  "Asyff": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=scholarly",
+  "Leela": "ElevenLabs:Emily (LcfcDJNUP1GQjkzn1xUU)|style=confident",
+  "Osman": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=commanding",
+  "Ali Morrisane": "ElevenLabs:Antoni (ErXwobaYiN019PkySvjV)|style=merchant",
+  "Menaphite Thug": "ElevenLabs:Elli (MF3mGyEYCl7XYWbV9V6O)|style=gruff",
+  "Sophanem Guard": "ElevenLabs:Daniel (onwK4e9ZLuTAKqWW03F9)|style=stern",
+  "High Priest": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=solemn",
+  "Maisa": "ElevenLabs:Rachel (21m00Tcm4TlvDq8ikWAM)|style=calm",
+  "Agent": "ElevenLabs:Paul (2EiwWnXFnvU5JabPnv8n)|style=neutral",
+  "Mercenary": "ElevenLabs:Chris (iP95p4xoKVk53GoZ742B)|style=gruff",
+  "Bedabin Nomad": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=desert",
+  "Menaphite Leader": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=authoritative",
+  "Trader": "ElevenLabs:Josh (TxGEqnHWrfWFTfGW9XjX)|style=merchant",
+  "Scarab Priest": "ElevenLabs:Elli (MF3mGyEYCl7XYWbV9V6O)|style=mystic",
+  "High Priestess": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=regal",
+  "Prince Itzla Arkan": "ElevenLabs:Hiel (i3jmyqAiMz1kG1rQEOGK)|style=regal-accented"
+  },
+  "npcRegex": {
+    "(?i)menaphite .*thug": "ElevenLabs:Elli (MF3mGyEYCl7XYWbV9V6O)|style=gruff",
+    "(?i)menaphite .*guard": "ElevenLabs:Daniel (onwK4e9ZLuTAKqWW03F9)|style=stern",
+    "(?i)menaphite .*leader": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=authoritative",
+    "(?i)scarab priest": "ElevenLabs:Elli (MF3mGyEYCl7XYWbV9V6O)|style=mystic",
+    "(?i)mercenar(y|ies)": "ElevenLabs:Chris (iP95p4xoKVk53GoZ742B)|style=gruff"
+  },
+  "tags": {
+    "desert": "ElevenLabs:Charlie (IKne3meq5aSn9XLyUdCD)|style=desert",
+    "priest": "ElevenLabs:Glinda (z9fAnlkpzviPz146aGWa)|style=solemn",
+    "authority": "ElevenLabs:Brian (nPczCjzI2devNBz1zQrb)|style=commanding"
+  },
+  "_notes": "NPC list inferred; verify against in-game Children of the Sun interactions. Add/remove as quest finalized."
+}
