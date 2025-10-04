@@ -1,4 +1,4 @@
-# OSRS TTS (Text-to-Speech) Plugin
+# Rune Echo
 
 A RuneLite plugin that adds immersive voice narration to Old School RuneScape using AI-powered text-to-speech technology. The plugin reads quest dialogue, NPC overhead text, chat messages, books, scrolls, and more using ElevenLabs voices.
 
